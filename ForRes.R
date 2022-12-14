@@ -184,6 +184,39 @@ ferdig %>%
                     theme(legend.position="none")
                 }
 
+## Innsett verdier ; innsett filtre under "Step 1"
+# Step 1
+Sankey1 <- ferdig %>%
+  #filter(Fremmedartsstatus == "Doerstokkart" ,
+  # Vurderingsomraade =="S") %>%
+  make_long(Kategori2018, Kategori2023) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke angitt","NR","NK","LO","PH","HI","SE"))))
+
+# Step 2
+Sankey2 <- Sankey1%>%
+  dplyr::group_by(node)%>%
+  tally()
+
+# Step 3
+Sankey3 <- merge(Sankey1, Sankey2, by.x = 'node', by.y = 'node', all.x = TRUE)
+
+ggplot(data = Sankey3, aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = paste0(node,", n=", n) )) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke angitt"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none")
+            
+
+
 ##---       2.4 Utslagsgivende kriterier  ---####
 ##---           2.4.1 Invasjonspotensiale      ---####
 ggplot(data = ferdig %>%
