@@ -59,11 +59,14 @@ ferdig$effektKrit[ferdig$effektKrit==""] <- "Ingen effekt"
 ##---       1.2 Long-format for økologisk effekt og Årsak til endring uten kombinerte kategorier  ---####
 # Konverter til long-format mtp effekt-kriteriene
 ferdig_long.effekt <- ferdig %>%
+  # For å sikre at "ingen effekt" bare telles én gang, innsett denne som effektKrit1 om det er relevant
+  mutate(effektKrit1 = case_when(effektKrit == 'Ingen effekt' ~ 'Ingen effekt',
+                                 effektKrit1 %in% c('D','E','F','G','H','I') ~ effektKrit1)) %>%
   pivot_longer(c("effektKrit1", "effektKrit2", "effektKrit3"),
                names_to = "effektKritNo",
                values_to = "effektKritLong")  %>%
   # Fjern tomme rekker/ingen effekt
-  filter(effektKritLong %in% c("D","E","F","G","H","I"))
+  filter(effektKritLong %in% c("D","E","F","G","H","I","Ingen effekt"))
 
 
 # Split kolonnen for Årsak til endring i kategori så det ikke finnes kombinerte kategorier
@@ -100,9 +103,9 @@ ggplot(data = ferdig, aes(x = Kategori2023, fill = Kategori2023)) +
 
 # Med mulighet for å filtrere ; innsett filtre i de første linjene
 ferdig %>%
-  filter(Vurderingsomraade == "N",
+  filter(#Vurderingsomraade == "N",
          #Ekspertkomite == "Karplanter",
-         Fremmedartsstatus == "Selvstendig reproduserende") %>% {
+         Fremmedartsstatus == "Doerstokkart") %>% {
     ggplot(.,
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
@@ -124,7 +127,11 @@ ggplot(data = ferdig %>% filter(!Kategori2023 %in% c("Ikke angitt", "NR"))  # Ta
   geom_bar(color = 'black') +
   labs(x = "Etableringsklasse", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-  scale_fill_grey(start = .2, end = 1) +
+  #scale_fill_grey(start = .2, end = 1) +
+  scale_fill_manual(values = c("A"="#35a3b2",
+                               "B1"="#71B581", "B2"="#71B581",
+                               "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
+                               "C3"="#e5b445","D1"="#e5b445", "D2"="#e5b445", "E"="#e5b445")) +
   theme_minimal() +
   theme(legend.position="none",
         panel.grid = element_blank(),
@@ -133,9 +140,9 @@ ggplot(data = ferdig %>% filter(!Kategori2023 %in% c("Ikke angitt", "NR"))  # Ta
 
 # Med mulighet for å filtrere ; innsett filtre i de første linjene
 ferdig %>%
-  filter(Vurderingsomraade == "S",
+  filter(Vurderingsomraade == "N",
          #Ekspertkomite == "Karplanter",
-         Fremmedartsstatus == "Doerstokkart",
+         #Fremmedartsstatus == "Doerstokkart",
          !Kategori2023 %in% c("Ikke angitt", "NR")) %>% {
            ggplot(.,
                   aes(x = Etableringsklasse, fill = Etableringsklasse)) +
@@ -143,7 +150,11 @@ ferdig %>%
              labs(x = "Etableringsklasse", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
              #scale_x_discrete(drop=FALSE) +
-             scale_fill_grey(start = .2, end = 1) +
+             #scale_fill_grey(start = .2, end = 1) +
+             scale_fill_manual(values = c("A"="#35a3b2",
+                                          "B1"="#71B581", "B2"="#71B581",
+                                          "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
+                                          "C3"="#e5b445","D1"="#e5b445", "D2"="#e5b445", "E"="#e5b445")) +
              theme_minimal() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
@@ -153,8 +164,8 @@ ferdig %>%
 
 ##---       2.3 Endring i kategori ; flowchart  ---####
 ferdig %>%
-  #filter(Fremmedartsstatus == "Selvstendig reproduserende",
-  #       Vurderingsomraade =="S") %>%
+  #filter(Fremmedartsstatus == "Doerstokkart" ,
+         # Vurderingsomraade =="S") %>%
   make_long(Kategori2018, Kategori2023) %>%
   mutate(across(c(node, next_node),
                 ~ordered(.x, levels = c("Ikke angitt","NR","NK","LO","PH","HI","SE")))) %>% {
@@ -173,7 +184,6 @@ ferdig %>%
                     theme(legend.position="none")
                 }
 
-##--- 4. Utslagsgivende kriteriet
 ##---       2.4 Utslagsgivende kriterier  ---####
 ##---           2.4.1 Invasjonspotensiale      ---####
 ggplot(data = ferdig %>%
@@ -183,7 +193,9 @@ ggplot(data = ferdig %>%
   geom_bar(color = 'black') +
   labs(x = "Kriterier, invasjonspotensiale", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-  scale_fill_grey(start = .2, end = 1) +
+  #scale_fill_grey(start = .2, end = 1) +
+  scale_fill_manual(values = c("AxB"="#35a3b2", "C"="#35a3b2",
+                               "Lite invasjonspotensiale"="gray80")) +
   theme_minimal() +
   theme(legend.position="none",
         panel.grid = element_blank(),
@@ -192,7 +204,7 @@ ggplot(data = ferdig %>%
 
 # Med mulighet for å filtrere ; innsett filtre i de første linjene
 ferdig %>%
-  filter(Vurderingsomraade == "N",
+  filter(Vurderingsomraade == "S",
          #Ekspertkomite == "Karplanter",
          Fremmedartsstatus == "Doerstokkart",
          !is.na(invKrit_comb),
@@ -203,7 +215,9 @@ ferdig %>%
              labs(x = "Kriterier, invasjonspotensiale", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
              scale_x_discrete(drop=FALSE) +
-             scale_fill_grey(start = .2, end = 1) +
+             #scale_fill_grey(start = .2, end = 1) +
+             scale_fill_manual(values = c("AxB"="#35a3b2", "C"="#35a3b2",
+                                          "Lite invasjonspotensiale"="gray80")) +
              theme_minimal() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
@@ -219,7 +233,10 @@ ggplot(data = ferdig %>%
   geom_bar(color = 'black') +
   labs(x = "Kriterier, oekologisk effekt", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-  scale_fill_grey(start = .2, end = 1) +
+  #scale_fill_grey(start = .2, end = 1) +
+  scale_fill_manual(values = c("Ingen effekt"="gray80","F"="#e5b445","G"="#e5b445","DE"="#e5b445","EF"="#e5b445","I"="#e5b445","D"="#e5b445",
+                               "E"="#e5b445","DGI"="#e5b445","DF"="#e5b445","H"="#e5b445","EI"="#e5b445","DH"="#e5b445","EH"="#e5b445",
+                               "DI"="#e5b445","DEF"="#e5b445","DHI"="#e5b445","EG"="#e5b445","FI"="#e5b445")) +
   theme_minimal() +
   theme(legend.position="none",
         panel.grid = element_blank(),
@@ -230,7 +247,7 @@ ggplot(data = ferdig %>%
 ferdig %>%
   filter(Vurderingsomraade == "N",
          #Ekspertkomite == "Karplanter",
-         Fremmedartsstatus == "Doerstokkart",
+         Fremmedartsstatus == "Selvstendig reproduserende",
          !is.na(effektKrit),
          !Kategori2023 %in% c("Ikke angitt", "NR")) %>% {
            ggplot(.,
@@ -239,7 +256,10 @@ ferdig %>%
              labs(x = "Kriterier, oekologisk effekt", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
              scale_x_discrete(drop=FALSE) +
-             scale_fill_grey(start = .2, end = 1) +
+             #scale_fill_grey(start = .2, end = 1) +
+             scale_fill_manual(values = c("Ingen effekt"="gray80","F"="#e5b445","G"="#e5b445","DE"="#e5b445","EF"="#e5b445","I"="#e5b445","D"="#e5b445",
+                                          "E"="#e5b445","DGI"="#e5b445","DF"="#e5b445","H"="#e5b445","EI"="#e5b445","DH"="#e5b445","EH"="#e5b445",
+                                          "DI"="#e5b445","DEF"="#e5b445","DHI"="#e5b445","EG"="#e5b445","FI"="#e5b445")) +
              theme_minimal() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
@@ -254,7 +274,9 @@ ggplot(data = ferdig_long.effekt %>%
   geom_bar(color = 'black') +
   labs(x = "Kriterier, oekologisk effekt", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-  scale_fill_grey(start = .2, end = .9) +
+  #scale_fill_grey(start = .2, end = .9) +
+  scale_fill_manual(values = c("Ingen effekt"="gray80","F"="#e5b445","G"="#e5b445","I"="#e5b445","D"="#e5b445",
+                               "E"="#e5b445","H"="#e5b445")) +
   theme_minimal() +
   theme(legend.position="none",
         panel.grid = element_blank(),
@@ -264,7 +286,7 @@ ggplot(data = ferdig_long.effekt %>%
 # Med mulighet for å filtrere ; innsett filtre i de første linjene
 ferdig_long.effekt %>%
   filter(effektKritNo != "",
-         Vurderingsomraade == "N",
+         #Vurderingsomraade == "N",
          #Ekspertkomite == "Karplanter",
          Fremmedartsstatus == "Doerstokkart",
          !Kategori2023 %in% c("Ikke angitt", "NR")) %>% {
@@ -273,7 +295,9 @@ ferdig_long.effekt %>%
              geom_bar(color = 'black') +
              labs(x = "Kriterier, oekologsk effekt", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-             scale_fill_grey(start = .2, end = .9) +
+             #scale_fill_grey(start = .2, end = .9) +
+             scale_fill_manual(values = c("Ingen effekt"="gray80","F"="#e5b445","G"="#e5b445","I"="#e5b445","D"="#e5b445",
+                                          "E"="#e5b445","H"="#e5b445")) +
              theme_minimal() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
@@ -283,14 +307,19 @@ ferdig_long.effekt %>%
 
 
 ##---       2.5 Årsak til endring  ---####
-
 ggplot(data = ferdig_long.endring %>%
          filter(Aarsak_norsk != ""),  # Fjerne rekker uten endring i kategori
        aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
   geom_bar(color = 'black') +
   labs(x = "Aarsak til endring", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-  scale_fill_grey(start = .2, end = .9) +
+  #scale_fill_grey(start = .2, end = .9) +
+  scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                               "Endret status"="#5FB7B1",
+                               "Endret tolkning av retningslinjer"="#71B581",
+                               "Ny kunnskap"="#A0BA5B",
+                               "Ny tolkning av data"="#d2c160",
+                               "Reell endring"="#e5b445")) +
   theme_minimal() +
   theme(legend.position="none",
         panel.grid = element_blank(),
@@ -301,7 +330,7 @@ ggplot(data = ferdig_long.endring %>%
 # Med mulighet for å filtrere ; innsett filtre i de første linjene
 ferdig_long.endring %>%
   filter(Aarsak_norsk != "",
-         Vurderingsomraade == "N",
+         #Vurderingsomraade == "N",
          #Ekspertkomite == "Karplanter",
          Fremmedartsstatus == "Doerstokkart",
          !Kategori2023 %in% c("Ikke angitt", "NR")) %>% {
@@ -311,7 +340,13 @@ ferdig_long.endring %>%
              labs(x = "Aarsak til endring", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
              scale_x_discrete(drop=FALSE) +
-             scale_fill_grey(start = .2, end = .9) +
+             #scale_fill_grey(start = .2, end = .9) +
+             scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                          "Endret status"="#5FB7B1",
+                                          "Endret tolkning av retningslinjer"="#71B581",
+                                          "Ny kunnskap"="#A0BA5B",
+                                          "Ny tolkning av data"="#d2c160",
+                                          "Reell endring"="#e5b445")) +
              theme_minimal() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
@@ -321,16 +356,56 @@ ferdig_long.endring %>%
          }
 
 ##---       2.6 Fremmedartsstatus  ---####
-ggplot(data = ferdig %>% filter(!Kategori2023 %in% c("Ikke angitt")),
+ggplot(data = ferdig ,
        aes(x = Fremmedartsstatus, fill = Fremmedartsstatus)) +
   geom_bar(color = 'black') +
   labs(x = "Fremmedartsstatus", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
   scale_x_discrete(drop=FALSE) +
-  scale_fill_grey(start = .2, end = 1) +
+  #scale_fill_grey(start = .2, end = 1) +
+  scale_fill_manual(values = c("Selvstendig reproduserende"="#e5b445",
+                               "Regionalt fremmed"="#e5b445",
+                               "Doerstokkart"="#35a3b2",
+                               "Effekt uten selvstendig reproduksjon"="#35a3b2",
+                               "Vurderes paa et annet taksonomisk nivaa"="#e5b445",
+                               "Etablert per 1800"="gray80",
+                               "Feilbestemt i 2018"="gray80",
+                               "Ikke definert"="white",
+                               "Ikke fremmed"="gray80",
+                               " "="white")) +
   theme_minimal() +
   theme(legend.position="none",
         panel.grid = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         axis.text.x = element_text(angle = 90))
+
+# Med filtrering
+ferdig %>%
+  filter(#Fremmedartsstatus == "Doerstokkart",
+    #Ekspertkomite == "Karplanter",
+    Vurderingsomraade == "S") %>% {
+      ggplot(.,
+       aes(x = Fremmedartsstatus, fill = Fremmedartsstatus)) +
+  geom_bar(color = 'black') +
+  labs(x = "Fremmedartsstatus", y = "") +
+  geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+  scale_x_discrete(drop=FALSE) +
+  #scale_fill_grey(start = .2, end = 1) +
+  scale_fill_manual(values = c("Selvstendig reproduserende"="#e5b445",
+                               "Regionalt fremmed"="#e5b445",
+                               "Doerstokkart"="#35a3b2",
+                               "Effekt uten selvstendig reproduksjon"="#35a3b2",
+                               "Vurderes paa et annet taksonomisk nivaa"="#e5b445",
+                               "Etablert per 1800"="gray80",
+                               "Feilbestemt i 2018"="gray80",
+                               "Ikke definert"="white",
+                               "Ikke fremmed"="gray80",
+                               " "="white")) +
+  theme_minimal() +
+  theme(legend.position="none",
+        panel.grid = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(angle = 90))
+    }
