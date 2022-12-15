@@ -8,8 +8,9 @@ library(data.table)
 library(ggalluvial)
 library(ggsankey)
 
-# Les eksportfilen fra mappe; rett æ, ø og å før filen leses
-alle_arter <- read.csv2("20221213/eksportabsoluteall.csv")
+# Les eksportfilen fra mappe
+### Rett æ, ø og å før filen leses
+alle_arter <- read.csv2("20221215/eksportabsoluteall.csv")
 
 ###--   1. RYDDING  ---####
 
@@ -17,14 +18,21 @@ alle_arter <- read.csv2("20221213/eksportabsoluteall.csv")
 ferdig <- alle_arter %>%
   filter(Vurderinsstatus == "finished")
 
+ferdig %>%
+  select(Ekspertkomite, Vurderinsstatus,VitenskapeligNavn, NorskNavn, SistEndretAv,
+         Kategori2018, Kategori2023, AarsakTilEndringIKategori) %>%
+  filter(Kategori2023 == "" )
+# Noe rart ved at det finnes tomme kategorier for 2023; dette burde ikke være mulig.
+# Disse står som NR i FAB. Sjekk data manuelt - fiks her
+
 # Definer rette faktor-nivåer i rett rekkefølge
 ferdig$Kategori2018[ferdig$Kategori2018==""] <- "Ikke angitt"
-ferdig$Kategori2023[ferdig$Kategori2023==""] <- "Ikke angitt"
+ferdig$Kategori2023[ferdig$Kategori2023==""] <- "NR"
 
 ferdig <- ferdig %>%
   # Risikokategorier
   mutate(across(c(Kategori2023, Kategori2018),
-                                   ~ordered(.x, levels = c("Ikke angitt","NR","NK","LO","PH","HI","SE")))) %>%
+                                   ~ordered(.x, levels = c("NR","NK","LO","PH","HI","SE")))) %>%
   # Fremmedartsstatus
   mutate(across(c(Fremmedartsstatus),
                 ~ordered(.x, levels = c("Selvstendig reproduserende", "Regionalt fremmed", "Doerstokkart",
@@ -79,13 +87,6 @@ ferdig_long.endring <- ferdig %>%
                                    AarsakTilEndringIKategori =="changedCriteriaInterpretation"  ~ "Endret tolkning av retningslinjer",
                                    AarsakTilEndringIKategori =="changedStatus"  ~ "Endret status"), .keep = "all")
 
-##---       1.3 Long-format, alle kriterier  ---####
-# For å lage et plot med alle kriterier i et, lag ny konvertering til long-format; først samle kriterier, splitte i etterkant
-
-## TBC
-
-
-  
 ##------------------------------------------------------------------------------------------------####
 ##---   2. PLOTS  ---####
 ##---       2.1 Risikokategori  ---####
@@ -93,7 +94,7 @@ ggplot(data = ferdig, aes(x = Kategori2023, fill = Kategori2023)) +
   geom_bar(color = 'black') +
   labs(x = "Risikokategori 2023", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
-  scale_fill_manual(values = c("Ikke angitt"="gray80", "NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+  scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) +
   theme_minimal() +
   theme(legend.position="none",
@@ -103,7 +104,7 @@ ggplot(data = ferdig, aes(x = Kategori2023, fill = Kategori2023)) +
 
 # Med mulighet for å filtrere ; innsett filtre i de første linjene
 ferdig %>%
-  filter(#Vurderingsomraade == "N",
+  filter(Vurderingsomraade == "N",
          #Ekspertkomite == "Karplanter",
          Fremmedartsstatus == "Doerstokkart") %>% {
     ggplot(.,
@@ -112,14 +113,38 @@ ferdig %>%
       labs(x = "Risikokategori 2023", y = "") +
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
       scale_x_discrete(drop=FALSE) +
-      scale_fill_manual(values = c("Ikke angitt"="gray80", "NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+      scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
              theme_minimal() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
                    axis.ticks.y = element_blank())
-           }
+         }
+
+# Filter og fasetering
+ferdig %>%
+  filter(#Vurderingsomraade == "N",
+         #Ekspertkomite == "Karplanter",
+         Fremmedartsstatus == "Doerstokkart" | Fremmedartsstatus == "Selvstendig reproduserende") %>% 
+  {
+           ggplot(.,
+                  aes(x = Kategori2023, fill = Kategori2023)) +
+             geom_bar(color = 'black') +
+             labs(x = "Risikokategori 2023", y = "") +
+             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 3) +
+             scale_x_discrete(drop=FALSE) +
+             scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+                                          "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
+             theme_minimal() +
+             theme(legend.position="none",
+                   panel.grid = element_blank(),
+                   axis.text.y = element_blank(),
+                   axis.ticks.y = element_blank()) +
+             facet_grid(# ~ 
+                         Fremmedartsstatus ~  Vurderingsomraade )
+                         #scales = "free_y")
+         }
 
 ##---       2.2 Etableringsklasse  ---####
 ggplot(data = ferdig %>% filter(!Kategori2023 %in% c("Ikke angitt", "NR"))  # Tag bort arter som per definisjon ikke har en etableringsklasse
