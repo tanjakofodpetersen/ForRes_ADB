@@ -134,14 +134,17 @@ ferdig %>%
              geom_bar(color = 'black') +
              labs(x = "Risikokategori 2023", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 3) +
-             scale_x_discrete(drop=FALSE) +
              scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                           "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
-             theme_minimal() +
+             theme_bw() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank()) +
+                   axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank()) +
              facet_grid(# ~ 
                          Fremmedartsstatus ~  Vurderingsomraade,
                          scales = "free")
@@ -205,11 +208,15 @@ ferdig %>%
                                           "B1"="#71B581", "B2"="#71B581",
                                           "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
                                           "C3"="#e5b445","D1"="#e5b445", "D2"="#e5b445", "E"="#e5b445")) +
-             theme_minimal() +
+             theme_bw() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank()) +
+                   axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank()) +
              facet_grid(# ~ 
                Fremmedartsstatus ~  Vurderingsomraade )
          }
@@ -323,15 +330,18 @@ ferdig %>%
              geom_bar(color = 'black') +
              labs(x = "Utslagsgivende kriterier, invasjonspotensiale", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 3) +
-             scale_x_discrete(drop=FALSE) +
-             #scale_fill_grey(start = .2, end = 1) +
+             #scale_x_discrete(drop=FALSE) +
              scale_fill_manual(values = c("AxB"="#35a3b2", "C"="#35a3b2",
                                           "Lite invasjonspotensiale"="gray80")) +
-             theme_minimal() +
+             theme_bw() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank()) +
+                   axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank()) +
              facet_grid(# ~ 
                Fremmedartsstatus ~  Vurderingsomraade )
          }
@@ -395,11 +405,15 @@ ferdig %>%
              scale_fill_manual(values = c("Ingen effekt"="gray80","F"="#e5b445","G"="#e5b445","DE"="#e5b445","EF"="#e5b445","I"="#e5b445","D"="#e5b445",
                                           "E"="#e5b445","DGI"="#e5b445","DF"="#e5b445","H"="#e5b445","EI"="#e5b445","DH"="#e5b445","EH"="#e5b445",
                                           "DI"="#e5b445","DEF"="#e5b445","DHI"="#e5b445","EG"="#e5b445","FI"="#e5b445")) +
-             theme_minimal() +
+             theme_bw() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank()) +
+                   axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank()) +
              facet_grid(# ~ 
                Fremmedartsstatus ~  Vurderingsomraade )
          }
@@ -454,14 +468,17 @@ ferdig_long.effekt %>%
              geom_bar(color = 'black') +
              labs(x = "Utslagsgivende kriterier, oekologisk effekt", y = "") +
              geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 3) +
-             #scale_fill_grey(start = .2, end = .9) +
              scale_fill_manual(values = c("Ingen effekt"="gray80","F"="#e5b445","G"="#e5b445","I"="#e5b445","D"="#e5b445",
                                           "E"="#e5b445","H"="#e5b445")) +
-             theme_minimal() +
+             theme_bw() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank())  +
+                   axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank())  +
              facet_grid(# ~ 
                Fremmedartsstatus ~  Vurderingsomraade )
          }
@@ -525,20 +542,22 @@ ferdig_long.endring %>%
                   aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
              geom_bar(color = 'black') +
              labs(x = "Aarsak til endring", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.3, size = 3) +
-             scale_x_discrete(drop=FALSE) +
-             #scale_fill_grey(start = .2, end = .9) +
+             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
              scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                           "Endret status"="#5FB7B1",
                                           "Endret tolkning av retningslinjer"="#71B581",
                                           "Ny kunnskap"="#A0BA5B",
                                           "Ny tolkning av data"="#d2c160",
                                           "Reell endring"="#e5b445")) +
-             theme_minimal() +
+             theme_bw() +
              theme(legend.position="none",
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
                    axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank(),
                    axis.text.x = element_text(angle = 90, hjust = .9))   +
              facet_grid(# ~ 
                Fremmedartsstatus ~  Vurderingsomraade )
@@ -618,11 +637,15 @@ ferdig %>%
                                      "Feilbestemt i 2018"="gray80",
                                      "Ikke definert"="white",
                                      "Ikke fremmed"="gray80")) +
-        theme_minimal() +
+        theme_bw() +
         theme(legend.position="none",
               panel.grid = element_blank(),
               axis.text.y = element_blank(),
               axis.ticks.y = element_blank(),
+              axis.line.y = element_blank(),
+              strip.background = element_rect(fill = "gray90"),
+              axis.line.x = element_blank(),
+              axis.ticks.x = element_blank(),
               axis.text.x = element_text(angle = 90))   +
         facet_grid(~  Vurderingsomraade )
     }
