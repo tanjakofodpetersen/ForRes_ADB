@@ -242,20 +242,42 @@ ferdig %>%
 
 
 
-##---         2.1.5 Matrise-plot; FUNKER IKKE ENDA ---####
+##---         2.1.5 Matrise-plot ---####
 
-View(as.data.frame.matrix(table(ferdig$Kategori2018, ferdig$Kategori2023)))
-
+# Lag contingency table med verdier
 cont <- ferdig %>%
+  filter(!Kategori2018 == 'Ikke vurdert') %>%  
+  droplevels() %>%
   group_by(Kategori2018, Kategori2023) %>%
-  tally() 
-
-
+  tally() %>%
+  as.data.frame() %>%
+  complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
+  mutate(diagonal = case_when(Kategori2023 == Kategori2018 ~ 'Y',
+                              Kategori2023 != Kategori2018 ~ 'N')) 
+  
 xtabs(cont$n ~ cont$Kategori2018 + cont$Kategori2023)
 
-
 ggplot(cont, aes(x = Kategori2023, y = Kategori2018)) +
-  geom_tile(fill = 'white')
+  geom_tile(aes(fill = diagonal), color = 'black') +
+  geom_text(aes(label = n)) +
+  scale_fill_manual(values = alpha(c('Y'='gray80',
+                               'N'='white',
+                               "NR"="gray80",
+                               "NK"="#a6ad59",
+                               'LO'="#60a5a3",
+                               'PH'="#1b586c",
+                               'HI'="#233368",
+                               'SE'="#602d5e"))) +
+  labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
+  geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
+  geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
+  theme_minimal() +
+  theme(legend.position = 'none',
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3)) 
+
 
 ##---     2.2 Karplanter  ---####
 ##---         2.2.1 Risikokategori  ---####
@@ -389,6 +411,43 @@ ferdig %>%
 
 
 
+##---         2.2.5 Matrise-plot ---####
+
+# Lag contingency table med verdier
+cont_karplanter <- ferdig %>%
+  filter(!Kategori2018 == 'Ikke vurdert',
+         Ekspertkomite == "Karplanter") %>%  
+  droplevels() %>%
+  group_by(Kategori2018, Kategori2023) %>%
+  tally() %>%
+  as.data.frame() %>%
+  complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
+  mutate(diagonal = case_when(Kategori2023 == Kategori2018 ~ 'Y',
+                              Kategori2023 != Kategori2018 ~ 'N')) 
+
+xtabs(cont_karplanter$n ~ cont_karplanter$Kategori2018 + cont_karplanter$Kategori2023)
+
+ggplot(cont_karplanter, aes(x = Kategori2023, y = Kategori2018)) +
+  geom_tile(aes(fill = diagonal), color = 'black') +
+  geom_text(aes(label = n)) +
+  scale_fill_manual(values = alpha(c('Y'='gray80',
+                                     'N'='white',
+                                     "NR"="gray80",
+                                     "NK"="#a6ad59",
+                                     'LO'="#60a5a3",
+                                     'PH'="#1b586c",
+                                     'HI'="#233368",
+                                     'SE'="#602d5e"))) +
+  labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
+  geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
+  geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
+  theme_minimal() +
+  theme(legend.position = 'none',
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3)) 
+
 ##---     2.3 Fremmede treslag  ---####
 
 # Vi ønsker de ovenstående plots bare for (reviderte) fremmede treslag (.xlsx-filen 'Treslag', fanen 'Treslag 2.0').
@@ -430,7 +489,7 @@ ferdig_treslag %>%
             axis.ticks.y = element_blank())
   }
 
-##---         2.1.2 Etableringsklasse ---####
+##---         2.3.2 Etableringsklasse ---####
 ferdig_treslag %>%
   filter(!Kategori2023 == "NR") %>%    # Tas ikke med i første runden
   {
@@ -464,7 +523,7 @@ ferdig_treslag %>%
             axis.text.x = element_text(angle = 45, hjust = .8)) 
   }
 
-##---         2.1.3 Aarsak til endring  ---####
+##---         2.3.3 Aarsak til endring  ---####
 ferdig_long.endring_treslag %>%
   filter(#Vurderingsomraade == "N",
     #Ekspertkomite == "Karplanter",
@@ -497,7 +556,7 @@ ferdig_long.endring_treslag %>%
     }
 
 
-##---         2.1.4 Endring i kategori  ---####
+##---         2.3.4 Endring i kategori  ---####
 ferdig_treslag %>%
   rename('Risikokategori 2018' = 'Kategori2018' ,
          'Risikokategori 2023' = 'Kategori2023' ) %>%
@@ -528,3 +587,40 @@ ferdig_treslag %>%
                     theme_sankey(base_size = 16) +
                     theme(legend.position="none")
                 }
+
+##---         2.3.5 Matrise-plot ---####
+
+# Lag contingency table med verdier
+cont_treslag <- ferdig_treslag %>%
+  filter(!Kategori2018 == 'Ikke vurdert') %>%  
+  droplevels() %>%
+  group_by(Kategori2018, Kategori2023) %>%
+  tally() %>%
+  as.data.frame() %>%
+  complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
+  mutate(diagonal = case_when(Kategori2023 == Kategori2018 ~ 'Y',
+                              Kategori2023 != Kategori2018 ~ 'N')) 
+
+xtabs(cont_treslag$n ~ cont_treslag$Kategori2018 + cont_treslag$Kategori2023)
+
+ggplot(cont_treslag, aes(x = Kategori2023, y = Kategori2018)) +
+  geom_tile(aes(fill = diagonal), color = 'black') +
+  geom_text(aes(label = n)) +
+  scale_fill_manual(values = alpha(c('Y'='gray80',
+                                     'N'='white',
+                                     "NR"="gray80",
+                                     "NK"="#a6ad59",
+                                     'LO'="#60a5a3",
+                                     'PH'="#1b586c",
+                                     'HI'="#233368",
+                                     'SE'="#602d5e"))) +
+  labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
+  geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
+  geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
+  theme_minimal() +
+  theme(legend.position = 'none',
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3)) 
+
