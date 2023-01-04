@@ -14,9 +14,10 @@ alle_arter <- read.csv2("20221215/eksportabsoluteall.csv")
 
 ###--   1. RYDDING  ---####
 
-# Behold bare ferdigstilte arter
+# Behold bare ferdigstilte arter og ikke-testedyr
 ferdig <- alle_arter %>%
-  filter(Vurderinsstatus == "finished")
+  filter(Vurderinsstatus == "finished") %>%
+  filter(!Ekspertkomite == "Testedyr")
 
 ferdig %>%
   select(Ekspertkomite, Vurderinsstatus,VitenskapeligNavn, NorskNavn, SistEndretAv,
@@ -244,6 +245,7 @@ ferdig %>%
                     theme(legend.position="none")
                 }
 
+##---           2.3.1 Inkluder verdier  ---####
 ## Innsett verdier ; innsett filtre under "Step 1"
 # Step 1
 Sankey1 <- ferdig %>%
@@ -274,7 +276,55 @@ ggplot(data = Sankey3, aes(x = x,
                     labs(x = "") +
                     theme_sankey(base_size = 16) +
                     theme(legend.position="none")
-            
+
+##---           2.3.2  Separer arter fra Horisontskanningen vs. reviderte arter  ---####
+# Arter fra Horisontskanning; her kan enten filtreres på HS (vi får også med NR-arter da), eller på arter som ikke
+# hadde en kategori i 2018 - det gir litt ulike resultater:
+ferdig %>%
+  filter( #Vurderingsomraade =="S",
+    #Fremmedartsstatus == "Selvstendig reproduserende",
+    #is.na(HorisontskanningEtableringspotensial),
+    Kategori2018 == "Ikke angitt") %>%
+  make_long(Kategori2018, Kategori2023) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke angitt","NR","NK","LO","PH","HI","SE")))) %>% {
+                  ggplot(., aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = node)) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke angitt"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none")
+                }
+
+# Reviderte arter:
+ferdig %>%
+  filter( #Vurderingsomraade =="S",
+    #Fremmedartsstatus == "Selvstendig reproduserende",
+    Kategori2018 != "Ikke angitt") %>%
+  make_long(Kategori2018, Kategori2023) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke angitt","NR","NK","LO","PH","HI","SE")))) %>% {
+                  ggplot(., aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = node)) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke angitt"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none")
+                }
 
 
 ##---       2.4 Utslagsgivende kriterier  ---####
