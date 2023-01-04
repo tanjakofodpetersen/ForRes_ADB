@@ -26,12 +26,14 @@ ferdig %>%
          Kategori2018, Kategori2023, AarsakTilEndringIKategori) %>%
   filter(Kategori2023 == "" )
 # Noe rart ved at det finnes tomme kategorier for 2023; dette burde ikke være mulig.
-# Disse står som NR i FAB. Sjekk data manuelt - fiks her. Dette gir ogse en feil i fremmedartsstatus som skal fikses her
+# Disse står som NR i FAB. Sjekk data manuelt - fiks her
+# Noe er generelt sett feil i de artene - de gir problemer andre steder også
 
 # Definer rette faktor-nivåer i rett rekkefølge
-ferdig$Kategori2018[ferdig$Kategori2018==""] <- "Ikke vurdert"
 ferdig$Kategori2023[ferdig$Kategori2023==""] <- "NR"
 ferdig$Fremmedartsstatus[ferdig$Fremmedartsstatus==""] <- "Ikke fremmed"
+ferdig$Kategori2018[ferdig$Kategori2018==""] <- "Ikke vurdert"
+
 
 ferdig <- ferdig %>%
   # Risikokategorier
@@ -104,12 +106,42 @@ ferdig <- ferdig %>%
                                              Etableringsklasse == "C3" | Etableringsklasse == "D1" | Etableringsklasse == "D2" | Etableringsklasse == "E" ~ "C3E"), .keep = "all") %>%
   mutate(across(c(Etableringsklasse_comb),
                 ~ordered(.x, levels = c("A","B1","B2","C0","C1","C2","C3E","Mangler"))))
+
+# Enkelte eksperter har ikke fylt ut korrekt for Etableringsklasse (især for sopp og karplanter); det betyr at alle arter som ikke er NR
+# med manglende etableringsklasse faktisk er etablerte (usikkert om det er C3, D1, D2 eller E). Legg derfor til den endringen manuelt
+ferdig[!ferdig$Kategori2023=='NR' & ferdig$Etableringsklasse_comb=='Mangler', 'Etableringsklasse_comb'] <- factor('C3E')
   
 
 ##------------------------------------------------------------------------------------------------####
 ##---   2. PLOTS  ---####
 ##---     2.1 Alle arter  ---####
-##---       2.1.1 Etableringsklasse ---####
+##---         2.1.1 Risikokategori  ---####
+ferdig %>%
+  #filter(Vurderingsomraade == "N",
+  #       Ekspertkomite == "Karplanter",
+  #       Fremmedartsstatus == "Doerstokkart") %>%
+  {
+           ggplot(.,
+                  aes(x = Kategori2023, fill = Kategori2023)) +
+             geom_bar(color = 'black') +
+             labs(x = "", y = "") +
+             geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      scale_x_discrete( #drop=FALSE,
+        labels = c("NR" = "Ikke risikovurdert\nNR",
+                   "NK" = "Ingen kjent risiko\nNK",
+                   "LO" = "Lav risiko\nLO",
+                   "PH" = "Potensielt hoey risiko\nPH",
+                   "HI" = "Hoey risiko\nHI",
+                   "SE" = "Svaert hoey risko\nSE")) +
+             scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+                                          "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
+             theme_minimal() +
+             theme(legend.position="none",
+                   panel.grid = element_blank(),
+                   axis.text.y = element_blank(),
+                   axis.ticks.y = element_blank())
+         }
+##---         2.1.2 Etableringsklasse ---####
 ferdig %>%
   filter(!Kategori2023 == "NR") %>%    # Tas ikke med i første runden
   {
@@ -121,9 +153,9 @@ ferdig %>%
       geom_segment(aes(x = 'A', xend = 'C1', y = 625, yend = 625),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
       geom_text(aes(x = 'B2', y = 650, label='Doerstokkarter'), size=3) +
-      geom_segment(aes(x = 'C2', xend = 'Mangler', y = 625, yend = 625),
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 625, yend = 625),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C3E', y = 650, label='Selvstendig reproduserende'), size=3) +
+      geom_text(aes(x = 'C2', y = 650, label='Selvstendig reproduserende'), size=3, hjust=-.01) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#71B581", "B2"="#71B581",
                                    "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
@@ -134,8 +166,7 @@ ferdig %>%
                                   "C0" = "Dokumentert i norsk natur",
                                   "C1" = "Overlever vinteren utendoers \nuten menneskelig tilsyn",
                                   "C2" = "Selvstendig reproduserende",
-                                  "C3E" = "Etablert i norsk natur",
-                                  "Mangler" = "Etableringsklasse mangler")) +
+                                  "C3E" = "Etablert i norsk natur")) +
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
@@ -144,5 +175,356 @@ ferdig %>%
             axis.text.x = element_text(angle = 45, hjust = .8)) 
   }
 
-##---       2.1.2 Aarsak til endring  ---####
+##---         2.1.3 Aarsak til endring  ---####
+ferdig_long.endring %>%
+  filter(#Vurderingsomraade == "N",
+         #Ekspertkomite == "Karplanter",
+         #Fremmedartsstatus == "Doerstokkart" | Fremmedartsstatus == "Selvstendig reproduserende",
+         Aarsak_norsk != "",) %>% {
+           ggplot(.,
+                  aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+             geom_bar(color = 'black') +
+             labs(x = "", y = "") +
+             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
+             scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                          "Endret status"="#5FB7B1",
+                                          "Endret tolkning av retningslinjer"="#71B581",
+                                          "Ny kunnskap"="#A0BA5B",
+                                          "Ny tolkning av data"="#d2c160",
+                                          "Reell endring"="#e5b445")) +
+             #theme_bw() +
+             theme_minimal() +
+             theme(legend.position="none",
+                   panel.grid = element_blank(),
+                   axis.text.y = element_blank(),
+                   axis.ticks.y = element_blank(),
+                   axis.line.y = element_blank(),
+                   #strip.background = element_rect(fill = "gray90"),
+                   axis.line.x = element_blank(),
+                   axis.ticks.x = element_blank(),
+                   axis.text.x = element_text(angle = 45, hjust = .9))  # +
+             #facet_grid(# ~ 
+               #Fremmedartsstatus ~  Vurderingsomraade )
+         }
 
+
+##---         2.1.4 Endring i kategori  ---####
+ferdig %>%
+  rename('Risikokategori 2018' = 'Kategori2018' ,
+         'Risikokategori 2023' = 'Kategori2023' ) %>%
+  #filter( Vurderingsomraade =="S",
+  #  Fremmedartsstatus == "Selvstendig reproduserende" )%>%
+  make_long(`Risikokategori 2018`, `Risikokategori 2023`) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke vurdert","NR","NK","LO","PH","HI","SE")))) %>% {
+                  ggplot(., aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = node)) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke vurdert"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
+                                      name = "",
+                                      labels = c('Ikke vurdert i 2018',
+                                                 'Ikke risikovurdert (NR)',
+                                                 'Ingen kjent risiko (NK)',
+                                                 'Lav risiko (LO)',
+                                                 'Potensielt hoey risiko (PH)',
+                                                 'Hoey risiko (HI)',
+                                                 'Svaert hoey risiko (SE)')) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none")
+                }
+
+
+
+##---         2.1.5 Matrise-plot; FUNKER IKKE ENDA ---####
+
+View(as.data.frame.matrix(table(ferdig$Kategori2018, ferdig$Kategori2023)))
+
+cont <- ferdig %>%
+  group_by(Kategori2018, Kategori2023) %>%
+  tally() 
+
+
+xtabs(cont$n ~ cont$Kategori2018 + cont$Kategori2023)
+
+
+ggplot(cont, aes(x = Kategori2023, y = Kategori2018)) +
+  geom_tile(fill = 'white')
+
+##---     2.2 Karplanter  ---####
+##---         2.2.1 Risikokategori  ---####
+ferdig %>%
+  filter(Ekspertkomite == "Karplanter" #,
+  #       Vurderingsomraade == "N",
+  #       Ekspertkomite == "Karplanter",
+  #       Fremmedartsstatus == "Doerstokkart"
+  ) %>%
+  {
+    ggplot(.,
+           aes(x = Kategori2023, fill = Kategori2023)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      scale_x_discrete( #drop=FALSE,
+        labels = c("NR" = "Ikke risikovurdert\nNR",
+                   "NK" = "Ingen kjent risiko\nNK",
+                   "LO" = "Lav risiko\nLO",
+                   "PH" = "Potensielt hoey risiko\nPH",
+                   "HI" = "Hoey risiko\nHI",
+                   "SE" = "Svaert hoey risko\nSE")) +
+      scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+                                   "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank())
+  }
+
+##---         2.2.2 Etableringsklasse ---####
+ferdig %>%
+  filter(Ekspertkomite == "Karplanter",
+         !Kategori2023 == "NR") %>%    # Tas ikke med i første runden
+  {
+    ggplot(.,
+           aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_segment(aes(x = 'A', xend = 'C1', y = 325, yend = 325),
+                   arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
+      geom_text(aes(x = 'B2', y = 350, label='Doerstokkarter'), size=3) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 325, yend = 325),
+                   arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
+      geom_text(aes(x = 'C2', y = 350, label='Selvstendig reproduserende'), size=3, hjust=-.01) +
+      scale_fill_manual(values = c("A"="#35a3b2",
+                                   "B1"="#71B581", "B2"="#71B581",
+                                   "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
+                                   "C3E"="#e5b445")) +
+      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
+                                  "B1" = "Forekommer innendoers eller \ni lukkede installasjoner",
+                                  "B2" = "Forekommer utendoers paa \neget produksjonsareal",
+                                  "C0" = "Dokumentert i norsk natur",
+                                  "C1" = "Overlever vinteren utendoers \nuten menneskelig tilsyn",
+                                  "C2" = "Selvstendig reproduserende",
+                                  "C3E" = "Etablert i norsk natur")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .8)) 
+  }
+
+##---         2.2.3 Aarsak til endring  ---####
+ferdig_long.endring %>%
+  filter(#Vurderingsomraade == "N",
+    Ekspertkomite == "Karplanter",
+    #Fremmedartsstatus == "Doerstokkart" | Fremmedartsstatus == "Selvstendig reproduserende",
+    Aarsak_norsk != "",) %>% {
+      ggplot(.,
+             aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+        geom_bar(color = 'black') +
+        labs(x = "", y = "") +
+        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
+        scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                     "Endret status"="#5FB7B1",
+                                     "Endret tolkning av retningslinjer"="#71B581",
+                                     "Ny kunnskap"="#A0BA5B",
+                                     "Ny tolkning av data"="#d2c160",
+                                     "Reell endring"="#e5b445")) +
+        #theme_bw() +
+        theme_minimal() +
+        theme(legend.position="none",
+              panel.grid = element_blank(),
+              axis.text.y = element_blank(),
+              axis.ticks.y = element_blank(),
+              axis.line.y = element_blank(),
+              #strip.background = element_rect(fill = "gray90"),
+              axis.line.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              axis.text.x = element_text(angle = 45, hjust = .9))  # +
+      #facet_grid(# ~ 
+      #Fremmedartsstatus ~  Vurderingsomraade )
+    }
+
+
+##---         2.2.4 Endring i kategori  ---####
+ferdig %>%
+  rename('Risikokategori 2018' = 'Kategori2018' ,
+         'Risikokategori 2023' = 'Kategori2023' ) %>%
+  filter( Ekspertkomite =="Karplanter") %>%
+  make_long(`Risikokategori 2018`, `Risikokategori 2023`) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke vurdert","NR","NK","LO","PH","HI","SE")))) %>% {
+                  ggplot(., aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = node)) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke vurdert"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
+                                      name = "",
+                                      labels = c('Ikke vurdert i 2018',
+                                                 'Ikke risikovurdert (NR)',
+                                                 'Ingen kjent risiko (NK)',
+                                                 'Lav risiko (LO)',
+                                                 'Potensielt hoey risiko (PH)',
+                                                 'Hoey risiko (HI)',
+                                                 'Svaert hoey risiko (SE)')) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none")
+                }
+
+
+
+
+##---     2.3 Fremmede treslag  ---####
+
+# Vi ønsker de ovenstående plots bare for (reviderte) fremmede treslag (.xlsx-filen 'Treslag', fanen 'Treslag 2.0').
+# Last inn filen og sjekk at navnene er kodet likt
+treslag <- read.csv2("Treslag.csv")
+
+# Filtrer dataframes jfr. navne på treslag
+ferdig_treslag <- ferdig %>%
+  filter(VitenskapeligNavn %in% treslag$VitenskapeligNavn)
+
+ferdig_long.endring_treslag <- ferdig_long.endring %>%
+  filter(VitenskapeligNavn %in% treslag$VitenskapeligNavn)
+
+
+##---         2.3.1 Risikokategori  ---####
+ferdig_treslag %>%
+  #filter(Vurderingsomraade == "N",
+  #       Ekspertkomite == "Karplanter",
+  #       Fremmedartsstatus == "Doerstokkart") %>%
+  {
+    ggplot(.,
+           aes(x = Kategori2023, fill = Kategori2023)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      scale_x_discrete( #drop=FALSE,
+        labels = c("NR" = "Ikke risikovurdert\nNR",
+                   "NK" = "Ingen kjent risiko\nNK",
+                   "LO" = "Lav risiko\nLO",
+                   "PH" = "Potensielt hoey risiko\nPH",
+                   "HI" = "Hoey risiko\nHI",
+                   "SE" = "Svaert hoey risko\nSE")) +
+      scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+                                   "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank())
+  }
+
+##---         2.1.2 Etableringsklasse ---####
+ferdig_treslag %>%
+  filter(!Kategori2023 == "NR") %>%    # Tas ikke med i første runden
+  {
+    ggplot(.,
+           aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_segment(aes(x = 'A', xend = 'C1', y = 35, yend = 35),
+                   arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
+      geom_text(aes(x = 'B2', y = 37, label='Doerstokkarter'), size=3, hjust=-.75) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 35, yend = 35),
+                   arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
+      geom_text(aes(x = 'C2', y = 37, label='Selvstendig reproduserende'), size=3, hjust=-.1) +
+      scale_fill_manual(values = c("A"="#35a3b2",
+                                   "B1"="#71B581", "B2"="#71B581",
+                                   "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
+                                   "C3E"="#e5b445")) +
+      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
+                                  "B1" = "Forekommer innendoers eller \ni lukkede installasjoner",
+                                  "B2" = "Forekommer utendoers paa \neget produksjonsareal",
+                                  "C0" = "Dokumentert i norsk natur",
+                                  "C1" = "Overlever vinteren utendoers \nuten menneskelig tilsyn",
+                                  "C2" = "Selvstendig reproduserende",
+                                  "C3E" = "Etablert i norsk natur")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .8)) 
+  }
+
+##---         2.1.3 Aarsak til endring  ---####
+ferdig_long.endring_treslag %>%
+  filter(#Vurderingsomraade == "N",
+    #Ekspertkomite == "Karplanter",
+    #Fremmedartsstatus == "Doerstokkart" | Fremmedartsstatus == "Selvstendig reproduserende",
+    Aarsak_norsk != "",) %>% {
+      ggplot(.,
+             aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+        geom_bar(color = 'black') +
+        labs(x = "", y = "") +
+        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
+        scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                     "Endret status"="#5FB7B1",
+                                     "Endret tolkning av retningslinjer"="#71B581",
+                                     "Ny kunnskap"="#A0BA5B",
+                                     "Ny tolkning av data"="#d2c160",
+                                     "Reell endring"="#e5b445")) +
+        #theme_bw() +
+        theme_minimal() +
+        theme(legend.position="none",
+              panel.grid = element_blank(),
+              axis.text.y = element_blank(),
+              axis.ticks.y = element_blank(),
+              axis.line.y = element_blank(),
+              #strip.background = element_rect(fill = "gray90"),
+              axis.line.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              axis.text.x = element_text(angle = 45, hjust = .9))  # +
+      #facet_grid(# ~ 
+      #Fremmedartsstatus ~  Vurderingsomraade )
+    }
+
+
+##---         2.1.4 Endring i kategori  ---####
+ferdig_treslag %>%
+  rename('Risikokategori 2018' = 'Kategori2018' ,
+         'Risikokategori 2023' = 'Kategori2023' ) %>%
+  #filter( Vurderingsomraade =="S",
+  #  Fremmedartsstatus == "Selvstendig reproduserende" )%>%
+  make_long(`Risikokategori 2018`, `Risikokategori 2023`) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke vurdert","NR","NK","LO","PH","HI","SE")))) %>% {
+                  ggplot(., aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = node)) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke vurdert"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
+                                      name = "",
+                                      labels = c('Ikke vurdert i 2018',
+                                                 'Ikke risikovurdert (NR)',
+                                                 'Ingen kjent risiko (NK)',
+                                                 'Lav risiko (LO)',
+                                                 'Potensielt hoey risiko (PH)',
+                                                 'Hoey risiko (HI)',
+                                                 'Svaert hoey risiko (SE)')) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none")
+                }
