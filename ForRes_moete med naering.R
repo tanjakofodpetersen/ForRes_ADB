@@ -125,7 +125,7 @@ ferdig %>%
                   aes(x = Kategori2023, fill = Kategori2023)) +
              geom_bar(color = 'black') +
              labs(x = "", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+             geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c("NR" = "Ikke risikovurdert\nNR",
                    "NK" = "Ingen kjent risiko\nNK",
@@ -137,10 +137,15 @@ ferdig %>%
                                           "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
              theme_minimal() +
              theme(legend.position="none",
+                   panel.background = element_rect(fill='transparent', color = NA),
+                   plot.background = element_rect(fill='transparent', color=NA),
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank())
-         }
+                   axis.ticks.y = element_blank(),
+                   axis.text.x = element_text(size = 12))
+  }
+ggsave('20221215/plots_moete20230106/alleArter/risikokategori.png', bg='transparent')
+
 ##---         2.1.2 Etableringsklasse ---####
 ferdig %>%
   filter(!Kategori2023 == "NR") %>%    # Tas ikke med i første runden
@@ -149,13 +154,13 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       geom_segment(aes(x = 'A', xend = 'C1', y = 625, yend = 625),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 650, label='Doerstokkarter'), size=3) +
+      geom_text(aes(x = 'B2', y = 650, label='Doerstokkarter'), size=4) +
       geom_segment(aes(x = 'C2', xend = 'C3E', y = 625, yend = 625),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 650, label='Selvstendig reproduserende'), size=3, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 650, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#71B581", "B2"="#71B581",
                                    "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
@@ -169,11 +174,15 @@ ferdig %>%
                                   "C3E" = "Etablert i norsk natur")) +
       theme_minimal() +
       theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =12)) 
   }
+ggsave('20221215/plots_moete20230106/alleArter/etableringsklasse.png', bg='transparent')
+
 
 ##---         2.1.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
@@ -185,16 +194,23 @@ ferdig_long.endring %>%
                   aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
              geom_bar(color = 'black') +
              labs(x = "", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
+             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
              scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                           "Endret status"="#5FB7B1",
                                           "Endret tolkning av retningslinjer"="#71B581",
                                           "Ny kunnskap"="#A0BA5B",
                                           "Ny tolkning av data"="#d2c160",
                                           "Reell endring"="#e5b445")) +
-             #theme_bw() +
+             scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger/\nretningslinjer",
+                                          "Endret status"="Endret status",
+                                          "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                          "Ny kunnskap"="Ny kunnskap",
+                                          "Ny tolkning av data"="Ny tolkning av data",
+                                          "Reell endring"="Reell endring")) +
              theme_minimal() +
              theme(legend.position="none",
+                   panel.background = element_rect(fill='transparent', color = NA),
+                   plot.background = element_rect(fill='transparent', color=NA),
                    panel.grid = element_blank(),
                    axis.text.y = element_blank(),
                    axis.ticks.y = element_blank(),
@@ -202,10 +218,11 @@ ferdig_long.endring %>%
                    #strip.background = element_rect(fill = "gray90"),
                    axis.line.x = element_blank(),
                    axis.ticks.x = element_blank(),
-                   axis.text.x = element_text(angle = 45, hjust = .9))  # +
+                   axis.text.x = element_text(angle = 45, hjust = .9, size = 12))  # +
              #facet_grid(# ~ 
                #Fremmedartsstatus ~  Vurderingsomraade )
          }
+ggsave('20221215/plots_moete20230106/alleArter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.1.4 Endring i kategori  ---####
@@ -237,9 +254,11 @@ ferdig %>%
                                                  'Svaert hoey risiko (SE)')) +
                     labs(x = "") +
                     theme_sankey(base_size = 16) +
-                    theme(legend.position="none")
+                    theme(legend.position="none",
+                          panel.background = element_rect(fill='transparent', color = NA),
+                          plot.background = element_rect(fill='transparent', color=NA))
                 }
-
+ggsave('20221215/plots_moete20230106/alleArter/endring.png', bg='transparent')
 
 
 ##---         2.1.5 Matrise-plot ---####
@@ -267,7 +286,7 @@ xtabs(cont$n ~ cont$Kategori2018 + cont$Kategori2023)
 
 ggplot(cont, aes(x = Kategori2023, y = Kategori2018)) +
   geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
-  geom_text(aes(label = n)) +
+  geom_text(aes(label = n), size = 6) +
   scale_fill_manual(values = c('0'='gray80',
                                '1+'='#FFFF92',
                                "2+"="#FFE778",
@@ -289,12 +308,16 @@ ggplot(cont, aes(x = Kategori2023, y = Kategori2018)) +
   geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
   theme_minimal() +
   theme(legend.position = 'none',
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =12),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
+
+ggsave('20221215/plots_moete20230106/alleArter/endring_matrise.png', bg='transparent')
 
 
 ##---     2.2 Karplanter  ---####
@@ -310,7 +333,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c("NR" = "Ikke risikovurdert\nNR",
                    "NK" = "Ingen kjent risiko\nNK",
@@ -322,10 +345,14 @@ ferdig %>%
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
       theme_minimal() +
       theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(size = 12))
   }
+ggsave('20221215/plots_moete20230106/karplanter/risikokategori.png', bg='transparent')
 
 ##---         2.2.2 Etableringsklasse ---####
 ferdig %>%
@@ -336,13 +363,13 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       geom_segment(aes(x = 'A', xend = 'C1', y = 325, yend = 325),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 350, label='Doerstokkarter'), size=3) +
+      geom_text(aes(x = 'B2', y = 350, label='Doerstokkarter'), size=4) +
       geom_segment(aes(x = 'C2', xend = 'C3E', y = 325, yend = 325),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 350, label='Selvstendig reproduserende'), size=3, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 350, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#71B581", "B2"="#71B581",
                                    "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
@@ -356,11 +383,15 @@ ferdig %>%
                                   "C3E" = "Etablert i norsk natur")) +
       theme_minimal() +
       theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
   }
+ggsave('20221215/plots_moete20230106/karplanter/etableringsklasse.png', bg='transparent')
+
 
 ##---         2.2.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
@@ -372,27 +403,32 @@ ferdig_long.endring %>%
              aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
         geom_bar(color = 'black') +
         labs(x = "", y = "") +
-        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
+        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
         scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                      "Endret status"="#5FB7B1",
                                      "Endret tolkning av retningslinjer"="#71B581",
                                      "Ny kunnskap"="#A0BA5B",
                                      "Ny tolkning av data"="#d2c160",
                                      "Reell endring"="#e5b445")) +
-        #theme_bw() +
+        scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger/\nretningslinjer",
+                                    "Endret status"="Endret status",
+                                    "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                    "Ny kunnskap"="Ny kunnskap",
+                                    "Ny tolkning av data"="Ny tolkning av data",
+                                    "Reell endring"="Reell endring")) +
         theme_minimal() +
         theme(legend.position="none",
+              panel.background = element_rect(fill='transparent', color = NA),
+              plot.background = element_rect(fill='transparent', color=NA),
               panel.grid = element_blank(),
               axis.text.y = element_blank(),
               axis.ticks.y = element_blank(),
               axis.line.y = element_blank(),
-              #strip.background = element_rect(fill = "gray90"),
               axis.line.x = element_blank(),
               axis.ticks.x = element_blank(),
-              axis.text.x = element_text(angle = 45, hjust = .9))  # +
-      #facet_grid(# ~ 
-      #Fremmedartsstatus ~  Vurderingsomraade )
+              axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
     }
+ggsave('20221215/plots_moete20230106/karplanter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.2.4 Endring i kategori  ---####
@@ -423,10 +459,11 @@ ferdig %>%
                                                  'Svaert hoey risiko (SE)')) +
                     labs(x = "") +
                     theme_sankey(base_size = 16) +
-                    theme(legend.position="none")
-                }
-
-
+                    theme(panel.background = element_rect(fill='transparent', color = NA),
+                          plot.background = element_rect(fill='transparent', color=NA),
+                          legend.position="none")
+                  }
+ggsave('20221215/plots_moete20230106/karplanter/endring.png', bg='transparent')
 
 
 ##---         2.2.5 Matrise-plot ---####
@@ -453,7 +490,7 @@ xtabs(cont_karplanter$n ~ cont_karplanter$Kategori2018 + cont_karplanter$Kategor
 
 ggplot(cont_karplanter, aes(x = Kategori2023, y = Kategori2018)) +
   geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
-  geom_text(aes(label = n)) +
+  geom_text(aes(label = n), size = 6) +
   scale_fill_manual(values = c('0'='gray80',
                                '1+'='#FFFF92',
                                "2+"="#FFE778",
@@ -475,12 +512,16 @@ ggplot(cont_karplanter, aes(x = Kategori2023, y = Kategori2018)) +
   geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
   theme_minimal() +
   theme(legend.position = 'none',
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size = 12),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
+
+ggsave('20221215/plots_moete20230106/karplanter/endring_matrise.png', bg='transparent')
 
 
 ##---     2.3 Fremmede treslag  ---####
@@ -507,7 +548,7 @@ ferdig_treslag %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c("NR" = "Ikke risikovurdert\nNR",
                    "NK" = "Ingen kjent risiko\nNK",
@@ -519,10 +560,15 @@ ferdig_treslag %>%
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
       theme_minimal() +
       theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(size = 12))
   }
+ggsave('20221215/plots_moete20230106/treslag/risikokategori.png', bg='transparent')
+
 
 ##---         2.3.2 Etableringsklasse ---####
 ferdig_treslag %>%
@@ -532,13 +578,13 @@ ferdig_treslag %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 3) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       geom_segment(aes(x = 'A', xend = 'C1', y = 35, yend = 35),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 37, label='Doerstokkarter'), size=3, hjust=-.75) +
+      geom_text(aes(x = 'B2', y = 37, label='Doerstokkarter'), size=4, hjust=-.75) +
       geom_segment(aes(x = 'C2', xend = 'C3E', y = 35, yend = 35),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 37, label='Selvstendig reproduserende'), size=3, hjust=-.1) +
+      geom_text(aes(x = 'C2', y = 37, label='Selvstendig reproduserende'), size=4, hjust=-.1) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#71B581", "B2"="#71B581",
                                    "C0"="#d2c160", "C1"="#d2c160", "C2"="#d2c160",
@@ -552,11 +598,15 @@ ferdig_treslag %>%
                                   "C3E" = "Etablert i norsk natur")) +
       theme_minimal() +
       theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
   }
+ggsave('20221215/plots_moete20230106/treslag/etableringsklasse.png', bg='transparent')
+
 
 ##---         2.3.3 Aarsak til endring  ---####
 ferdig_long.endring_treslag %>%
@@ -568,27 +618,32 @@ ferdig_long.endring_treslag %>%
              aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
         geom_bar(color = 'black') +
         labs(x = "", y = "") +
-        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 3) +
+        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
         scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                      "Endret status"="#5FB7B1",
                                      "Endret tolkning av retningslinjer"="#71B581",
                                      "Ny kunnskap"="#A0BA5B",
                                      "Ny tolkning av data"="#d2c160",
                                      "Reell endring"="#e5b445")) +
-        #theme_bw() +
+        scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger/\nretningslinjer",
+                                    "Endret status"="Endret status",
+                                    "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                    "Ny kunnskap"="Ny kunnskap",
+                                    "Ny tolkning av data"="Ny tolkning av data",
+                                    "Reell endring"="Reell endring")) +
         theme_minimal() +
         theme(legend.position="none",
+              panel.background = element_rect(fill='transparent', color = NA),
+              plot.background = element_rect(fill='transparent', color=NA),
               panel.grid = element_blank(),
               axis.text.y = element_blank(),
               axis.ticks.y = element_blank(),
               axis.line.y = element_blank(),
-              #strip.background = element_rect(fill = "gray90"),
               axis.line.x = element_blank(),
               axis.ticks.x = element_blank(),
-              axis.text.x = element_text(angle = 45, hjust = .9))  # +
-      #facet_grid(# ~ 
-      #Fremmedartsstatus ~  Vurderingsomraade )
+              axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
     }
+ggsave('20221215/plots_moete20230106/treslag/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.3.4 Endring i kategori  ---####
@@ -620,8 +675,12 @@ ferdig_treslag %>%
                                                  'Svaert hoey risiko (SE)')) +
                     labs(x = "") +
                     theme_sankey(base_size = 16) +
-                    theme(legend.position="none")
+                    theme(legend.position="none",
+                          panel.background = element_rect(fill='transparent', color = NA),
+                          plot.background = element_rect(fill='transparent', color=NA))
                 }
+ggsave('20221215/plots_moete20230106/treslag/endring.png', bg='transparent')
+
 
 ##---         2.3.5 Matrise-plot ---####
 
@@ -647,7 +706,7 @@ xtabs(cont_treslag$n ~ cont_treslag$Kategori2018 + cont_treslag$Kategori2023)
 
 ggplot(cont_treslag, aes(x = Kategori2023, y = Kategori2018)) +
   geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
-  geom_text(aes(label = n)) +
+  geom_text(aes(label = n), size = 6) +
   scale_fill_manual(values = c('0'='gray80',
                                '1+'='#FFFF92',
                                "2+"="#FFE778",
@@ -669,9 +728,217 @@ ggplot(cont_treslag, aes(x = Kategori2023, y = Kategori2018)) +
   geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
   theme_minimal() +
   theme(legend.position = 'none',
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size = 12),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
+
+ggsave('20221215/plots_moete20230106/treslag/endring_matrise.png', bg='transparent')
+
+
+##---     2.4 Doerstokkarter  ---####
+#---         2.4.1 Risikokategori  ---####
+ferdig %>%
+  filter(Fremmedartsstatus == "Doerstokkart" #,
+         #       Vurderingsomraade == "N",
+  ) %>%
+  {
+    ggplot(.,
+           aes(x = Kategori2023, fill = Kategori2023)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      scale_x_discrete( #drop=FALSE,
+        labels = c("NR" = "Ikke risikovurdert\nNR",
+                   "NK" = "Ingen kjent risiko\nNK",
+                   "LO" = "Lav risiko\nLO",
+                   "PH" = "Potensielt hoey risiko\nPH",
+                   "HI" = "Hoey risiko\nHI",
+                   "SE" = "Svaert hoey risko\nSE")) +
+      scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+                                   "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+ggsave('20221215/plots_moete20230106/doerstokkarter/risikokategori.png', bg='transparent')
+
+
+##---         2.4.2 Etableringsklasse ---####
+ferdig %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         !Kategori2023 == "NR") %>%    # Tas ikke med i første runden
+  {
+    ggplot(.,
+           aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 5) +
+      #geom_segment(aes(x = 'A', xend = 'C1', y = 325, yend = 325),
+      #             arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
+      #geom_text(aes(x = 'B2', y = 350, label='Doerstokkarter'), size=3) +
+      #geom_segment(aes(x = 'C2', xend = 'C3E', y = 325, yend = 325),
+      #             arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
+      #geom_text(aes(x = 'C2', y = 350, label='Selvstendig reproduserende'), size=3, hjust=-.01) +
+      scale_fill_manual(values = c("A"="#35a3b2",
+                                   "B1"="#71B581", "B2"="#71B581",
+                                   "C0"="#d2c160", "C1"="#d2c160" )) + #, "C2"="#d2c160",
+                                   #"C3E"="#e5b445")) +
+      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
+                                  "B1" = "Forekommer innendoers eller \ni lukkede installasjoner",
+                                  "B2" = "Forekommer utendoers paa \neget produksjonsareal",
+                                  "C0" = "Dokumentert i norsk natur",
+                                  "C1" = "Overlever vinteren utendoers \nuten menneskelig tilsyn" )) +#,
+                                  #"C2" = "Selvstendig reproduserende",
+                                  #"C3E" = "Etablert i norsk natur")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+  }
+ggsave('20221215/plots_moete20230106/doerstokkarter/etableringsklasse.png', bg='transparent')
+
+
+##---         2.4.3 Aarsak til endring  ---####
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+    Aarsak_norsk != "",) %>% {
+      ggplot(.,
+             aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+        geom_bar(color = 'black') +
+        labs(x = "", y = "") +
+        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+        scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                     "Endret status"="#5FB7B1",
+                                     "Endret tolkning av retningslinjer"="#71B581",
+                                     "Ny kunnskap"="#A0BA5B",
+                                     "Ny tolkning av data"="#d2c160",
+                                     "Reell endring"="#e5b445")) +
+        scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger/\nretningslinjer",
+                                    "Endret status"="Endret status",
+                                    "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                    "Ny kunnskap"="Ny kunnskap",
+                                    "Ny tolkning av data"="Ny tolkning av data",
+                                    "Reell endring"="Reell endring")) +
+        theme_minimal() +
+        theme(legend.position="none",
+              panel.background = element_rect(fill='transparent', color = NA),
+              plot.background = element_rect(fill='transparent', color=NA),
+              panel.grid = element_blank(),
+              axis.text.y = element_blank(),
+              axis.ticks.y = element_blank(),
+              axis.line.y = element_blank(),
+              axis.line.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+    }
+ggsave('20221215/plots_moete20230106/doerstokkarter/aarsakEndring.png', bg='transparent')
+
+
+##---         2.4.4 Endring i kategori  ---####
+ferdig %>%
+  rename('Risikokategori 2018' = 'Kategori2018' ,
+         'Risikokategori 2023' = 'Kategori2023' ) %>%
+  filter( Fremmedartsstatus == "Doerstokkart") %>%
+  make_long(`Risikokategori 2018`, `Risikokategori 2023`) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke vurdert","NR","NK","LO","PH","HI","SE")))) %>% {
+                  ggplot(., aes(x = x, 
+                                next_x = next_x, 
+                                node = node, 
+                                next_node = next_node,
+                                fill = node,
+                                label = node)) +
+                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                    scale_fill_manual(values = c("Ikke vurdert"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
+                                      name = "",
+                                      labels = c('Ikke vurdert i 2018',
+                                                 'Ikke risikovurdert (NR)',
+                                                 'Ingen kjent risiko (NK)',
+                                                 'Lav risiko (LO)',
+                                                 'Potensielt hoey risiko (PH)',
+                                                 'Hoey risiko (HI)',
+                                                 'Svaert hoey risiko (SE)')) +
+                    labs(x = "") +
+                    theme_sankey(base_size = 16) +
+                    theme(legend.position="none",
+                          panel.background = element_rect(fill='transparent', color = NA),
+                          plot.background = element_rect(fill='transparent', color=NA))
+                }
+ggsave('20221215/plots_moete20230106/doerstokkarter/endring.png', bg='transparent')
+
+
+
+##---         2.4.5 Matrise-plot ---####
+
+cont_DS <- ferdig %>%
+  filter(!Kategori2018 == 'Ikke vurdert',
+         Fremmedartsstatus == "Doerstokkart") %>%  
+  droplevels() %>%
+  mutate(across(c(Kategori2018, Kategori2023), ~ordered(.x, levels = c("NR","NK","LO","PH","HI","SE")))) %>%
+  group_by(Kategori2018, Kategori2023) %>%
+  tally() %>%
+  as.data.frame() %>%
+  complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
+  mutate(farge = case_when(Kategori2023 == Kategori2018 ~ '0',     # Legg til bakgrunnsfarger iht. grad av endring
+                           (Kategori2018 == 'NK' & Kategori2023 == 'LO') | (Kategori2018 == 'LO' & Kategori2023 == 'PH') | (Kategori2018 == 'PH' & Kategori2023 == 'HI') | (Kategori2018 == 'HI' & Kategori2023 == 'SE') ~ '1+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'PH') | (Kategori2018 == 'LO' & Kategori2023 == 'HI') | (Kategori2018 == 'PH' & Kategori2023 == 'SE') ~ '2+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'HI') | (Kategori2018 == 'LO' & Kategori2023 == 'SE') ~ '3+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'SE') ~ '4+',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'LO') | (Kategori2023 == 'LO' & Kategori2018 == 'PH') | (Kategori2023 == 'PH' & Kategori2018 == 'HI') | (Kategori2023 == 'HI' & Kategori2018 == 'SE') ~ '1-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'PH') | (Kategori2023 == 'LO' & Kategori2018 == 'HI') | (Kategori2023 == 'PH' & Kategori2018 == 'SE') ~ '2-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'HI') | (Kategori2023 == 'LO' & Kategori2018 == 'SE') ~ '3-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'SE') ~ '4-')) 
+
+xtabs(cont_DS$n ~ cont_DS$Kategori2018 + cont_DS$Kategori2023)
+
+ggplot(cont_DS, aes(x = Kategori2023, y = Kategori2018)) +
+  geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
+  geom_text(aes(label = n), size = 6) +
+  scale_fill_manual(values = c('0'='gray80',
+                               '1+'='#FFFF92',
+                               "2+"="#FFE778",
+                               "3+"="#FFCE5F",
+                               '4+'="#e5b445",
+                               '1-'="#82F0FF",
+                               '2-'="#68D6E5",
+                               '3-'="#4FBDCC",
+                               '4-'="#35a3b2",
+                               'N'='white',
+                               "NR"="gray80",
+                               "NK"="#a6ad59",
+                               'LO'="#60a5a3",
+                               'PH'="#1b586c",
+                               'HI'="#233368",
+                               'SE'="#602d5e"), na.value = 'white') +
+  labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
+  geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
+  geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
+  theme_minimal() +
+  theme(legend.position = 'none',
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =12),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+ggsave('20221215/plots_moete20230106/doerstokkarter/endring_matrise.png', bg='transparent')
+
