@@ -245,6 +245,7 @@ ferdig %>%
 ##---         2.1.5 Matrise-plot ---####
 
 # Lag contingency table med verdier
+
 cont <- ferdig %>%
   filter(!Kategori2018 == 'Ikke vurdert') %>%  
   droplevels() %>%
@@ -252,22 +253,37 @@ cont <- ferdig %>%
   tally() %>%
   as.data.frame() %>%
   complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
-  mutate(diagonal = case_when(Kategori2023 == Kategori2018 ~ 'Y',
-                              Kategori2023 != Kategori2018 ~ 'N')) 
-  
+  mutate(farge = case_when(Kategori2023 == Kategori2018 ~ '0',     # Legg til bakgrunnsfarger iht. grad av endring
+                           (Kategori2018 == 'NK' & Kategori2023 == 'LO') | (Kategori2018 == 'LO' & Kategori2023 == 'PH') | (Kategori2018 == 'PH' & Kategori2023 == 'HI') | (Kategori2018 == 'HI' & Kategori2023 == 'SE') ~ '1+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'PH') | (Kategori2018 == 'LO' & Kategori2023 == 'HI') | (Kategori2018 == 'PH' & Kategori2023 == 'SE') ~ '2+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'HI') | (Kategori2018 == 'LO' & Kategori2023 == 'SE') ~ '3+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'SE') ~ '4+',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'LO') | (Kategori2023 == 'LO' & Kategori2018 == 'PH') | (Kategori2023 == 'PH' & Kategori2018 == 'HI') | (Kategori2023 == 'HI' & Kategori2018 == 'SE') ~ '1-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'PH') | (Kategori2023 == 'LO' & Kategori2018 == 'HI') | (Kategori2023 == 'PH' & Kategori2018 == 'SE') ~ '2-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'HI') | (Kategori2023 == 'LO' & Kategori2018 == 'SE') ~ '3-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'SE') ~ '4-')) 
+
 xtabs(cont$n ~ cont$Kategori2018 + cont$Kategori2023)
 
 ggplot(cont, aes(x = Kategori2023, y = Kategori2018)) +
-  geom_tile(aes(fill = diagonal), color = 'black') +
+  geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
   geom_text(aes(label = n)) +
-  scale_fill_manual(values = alpha(c('Y'='gray80',
+  scale_fill_manual(values = c('0'='gray80',
+                               '1+'='#FFFF92',
+                               "2+"="#FFE778",
+                               "3+"="#FFCE5F",
+                               '4+'="#e5b445",
+                               '1-'="#82F0FF",
+                               '2-'="#68D6E5",
+                               '3-'="#4FBDCC",
+                               '4-'="#35a3b2",
                                'N'='white',
                                "NR"="gray80",
                                "NK"="#a6ad59",
                                'LO'="#60a5a3",
                                'PH'="#1b586c",
                                'HI'="#233368",
-                               'SE'="#602d5e"))) +
+                               'SE'="#602d5e"), na.value = 'white') +
   labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
   geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
   geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
@@ -276,7 +292,9 @@ ggplot(cont, aes(x = Kategori2023, y = Kategori2018)) +
         axis.ticks = element_blank(),
         axis.text = element_blank(),
         axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3)) 
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
 
 
 ##---     2.2 Karplanter  ---####
@@ -413,31 +431,45 @@ ferdig %>%
 
 ##---         2.2.5 Matrise-plot ---####
 
-# Lag contingency table med verdier
 cont_karplanter <- ferdig %>%
   filter(!Kategori2018 == 'Ikke vurdert',
-         Ekspertkomite == "Karplanter") %>%  
+         Ekspertkomite=="Karplanter") %>%  
   droplevels() %>%
   group_by(Kategori2018, Kategori2023) %>%
   tally() %>%
   as.data.frame() %>%
   complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
-  mutate(diagonal = case_when(Kategori2023 == Kategori2018 ~ 'Y',
-                              Kategori2023 != Kategori2018 ~ 'N')) 
+  mutate(farge = case_when(Kategori2023 == Kategori2018 ~ '0',     # Legg til bakgrunnsfarger iht. grad av endring
+                           (Kategori2018 == 'NK' & Kategori2023 == 'LO') | (Kategori2018 == 'LO' & Kategori2023 == 'PH') | (Kategori2018 == 'PH' & Kategori2023 == 'HI') | (Kategori2018 == 'HI' & Kategori2023 == 'SE') ~ '1+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'PH') | (Kategori2018 == 'LO' & Kategori2023 == 'HI') | (Kategori2018 == 'PH' & Kategori2023 == 'SE') ~ '2+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'HI') | (Kategori2018 == 'LO' & Kategori2023 == 'SE') ~ '3+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'SE') ~ '4+',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'LO') | (Kategori2023 == 'LO' & Kategori2018 == 'PH') | (Kategori2023 == 'PH' & Kategori2018 == 'HI') | (Kategori2023 == 'HI' & Kategori2018 == 'SE') ~ '1-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'PH') | (Kategori2023 == 'LO' & Kategori2018 == 'HI') | (Kategori2023 == 'PH' & Kategori2018 == 'SE') ~ '2-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'HI') | (Kategori2023 == 'LO' & Kategori2018 == 'SE') ~ '3-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'SE') ~ '4-')) 
 
 xtabs(cont_karplanter$n ~ cont_karplanter$Kategori2018 + cont_karplanter$Kategori2023)
 
 ggplot(cont_karplanter, aes(x = Kategori2023, y = Kategori2018)) +
-  geom_tile(aes(fill = diagonal), color = 'black') +
+  geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
   geom_text(aes(label = n)) +
-  scale_fill_manual(values = alpha(c('Y'='gray80',
-                                     'N'='white',
-                                     "NR"="gray80",
-                                     "NK"="#a6ad59",
-                                     'LO'="#60a5a3",
-                                     'PH'="#1b586c",
-                                     'HI'="#233368",
-                                     'SE'="#602d5e"))) +
+  scale_fill_manual(values = c('0'='gray80',
+                               '1+'='#FFFF92',
+                               "2+"="#FFE778",
+                               "3+"="#FFCE5F",
+                               '4+'="#e5b445",
+                               '1-'="#82F0FF",
+                               '2-'="#68D6E5",
+                               '3-'="#4FBDCC",
+                               '4-'="#35a3b2",
+                               'N'='white',
+                               "NR"="gray80",
+                               "NK"="#a6ad59",
+                               'LO'="#60a5a3",
+                               'PH'="#1b586c",
+                               'HI'="#233368",
+                               'SE'="#602d5e"), na.value = 'white') +
   labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
   geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
   geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
@@ -446,7 +478,10 @@ ggplot(cont_karplanter, aes(x = Kategori2023, y = Kategori2018)) +
         axis.ticks = element_blank(),
         axis.text = element_blank(),
         axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3)) 
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
 
 ##---     2.3 Fremmede treslag  ---####
 
@@ -598,22 +633,37 @@ cont_treslag <- ferdig_treslag %>%
   tally() %>%
   as.data.frame() %>%
   complete(Kategori2018, Kategori2023, fill = list(n = 0)) %>%
-  mutate(diagonal = case_when(Kategori2023 == Kategori2018 ~ 'Y',
-                              Kategori2023 != Kategori2018 ~ 'N')) 
+  mutate(farge = case_when(Kategori2023 == Kategori2018 ~ '0',     # Legg til bakgrunnsfarger iht. grad av endring
+                           (Kategori2018 == 'NK' & Kategori2023 == 'LO') | (Kategori2018 == 'LO' & Kategori2023 == 'PH') | (Kategori2018 == 'PH' & Kategori2023 == 'HI') | (Kategori2018 == 'HI' & Kategori2023 == 'SE') ~ '1+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'PH') | (Kategori2018 == 'LO' & Kategori2023 == 'HI') | (Kategori2018 == 'PH' & Kategori2023 == 'SE') ~ '2+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'HI') | (Kategori2018 == 'LO' & Kategori2023 == 'SE') ~ '3+',
+                           (Kategori2018 == 'NK' & Kategori2023 == 'SE') ~ '4+',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'LO') | (Kategori2023 == 'LO' & Kategori2018 == 'PH') | (Kategori2023 == 'PH' & Kategori2018 == 'HI') | (Kategori2023 == 'HI' & Kategori2018 == 'SE') ~ '1-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'PH') | (Kategori2023 == 'LO' & Kategori2018 == 'HI') | (Kategori2023 == 'PH' & Kategori2018 == 'SE') ~ '2-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'HI') | (Kategori2023 == 'LO' & Kategori2018 == 'SE') ~ '3-',
+                           (Kategori2023 == 'NK' & Kategori2018 == 'SE') ~ '4-')) 
 
 xtabs(cont_treslag$n ~ cont_treslag$Kategori2018 + cont_treslag$Kategori2023)
 
 ggplot(cont_treslag, aes(x = Kategori2023, y = Kategori2018)) +
-  geom_tile(aes(fill = diagonal), color = 'black') +
+  geom_tile(aes(fill = farge), alpha=.9, color = 'black') +
   geom_text(aes(label = n)) +
-  scale_fill_manual(values = alpha(c('Y'='gray80',
-                                     'N'='white',
-                                     "NR"="gray80",
-                                     "NK"="#a6ad59",
-                                     'LO'="#60a5a3",
-                                     'PH'="#1b586c",
-                                     'HI'="#233368",
-                                     'SE'="#602d5e"))) +
+  scale_fill_manual(values = c('0'='gray80',
+                               '1+'='#FFFF92',
+                               "2+"="#FFE778",
+                               "3+"="#FFCE5F",
+                               '4+'="#e5b445",
+                               '1-'="#82F0FF",
+                               '2-'="#68D6E5",
+                               '3-'="#4FBDCC",
+                               '4-'="#35a3b2",
+                               'N'='white',
+                               "NR"="gray80",
+                               "NK"="#a6ad59",
+                               'LO'="#60a5a3",
+                               'PH'="#1b586c",
+                               'HI'="#233368",
+                               'SE'="#602d5e"), na.value = 'white') +
   labs(x = 'Risikokategori 2023', y = 'Risikokategori 2018') +
   geom_label(aes(0.3, Kategori2018, label = Kategori2018, fill=Kategori2018), color='white', hjust = -.25, size = 5) +
   geom_label(aes(Kategori2023, 0.5, label = Kategori2023, fill=Kategori2023), color='white', vjust = .35, size = 5) +
@@ -622,5 +672,6 @@ ggplot(cont_treslag, aes(x = Kategori2023, y = Kategori2018)) +
         axis.ticks = element_blank(),
         axis.text = element_blank(),
         axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3)) 
-
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
