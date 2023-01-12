@@ -887,11 +887,14 @@ ggsave('20221215/plots_moete20230106/doerstokkarter/endring.png', bg='transparen
 ferdig %>%
   filter( Fremmedartsstatus == "Doerstokkart",
           Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
-  rename('Risikokategori 2018' = 'Kategori2018' ,
+  select(Kategori2018, Kategori2023, ) %>%
+  mutate(Kategori2018_edit =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",),
+         .keep = "all") %>%
+  rename(' ' = 'Kategori2018_edit' ,
          'Risikokategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Risikokategori 2018`, `Risikokategori 2023`) %>%
+  make_long(` `, `Risikokategori 2023`) %>%
   mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere","NR","NK","LO","PH","HI","SE")))) %>% {
+                ~ordered(.x, levels = c("Ikke risikovurdert tidligere", "NK","LO","PH","HI","SE")))) %>% {
                   ggplot(., aes(x = x, 
                                 next_x = next_x, 
                                 node = node, 
@@ -900,11 +903,10 @@ ferdig %>%
                                 label = node)) +
                     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                     geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                    scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70", "NR"="gray90", "NK"="#a6ad59", "LO"="#60a5a3",
+                    scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70", "NK"="#a6ad59", "LO"="#60a5a3",
                                                  "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
                                       name = "",
-                                      labels = c('Ikke risikovurdert i 2018',
-                                                 'Ikke risikovurdert (NR)',
+                                      labels = c('Ikke risikovurdert tidligere',
                                                  'Ingen kjent risiko (NK)',
                                                  'Lav risiko (LO)',
                                                  'Potensielt hoey risiko (PH)',
@@ -917,6 +919,58 @@ ferdig %>%
                           plot.background = element_rect(fill='transparent', color=NA))
                 }
 ggsave('20221215/plots_moete20230106/doerstokkarter/endring_HS.png', bg='transparent')
+
+
+# Samme plot som over, men med verdier
+{
+# Step 1
+Sankey1 <- ferdig %>%
+  filter( Fremmedartsstatus == "Doerstokkart",
+          Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
+  select(Kategori2018, Kategori2023, ) %>%
+  mutate(Kategori2018_edit =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",),
+         .keep = "all") %>%
+  rename(' ' = 'Kategori2018_edit' ,
+         'Risikokategori 2023' = 'Kategori2023' ) %>%
+  make_long(` `, `Risikokategori 2023`) %>%
+  mutate(across(c(node, next_node),
+                ~ordered(.x, levels = c("Ikke risikovurdert tidligere", "NK","LO","PH","HI","SE"))))
+
+# Step 2
+Sankey2 <- Sankey1%>%
+  dplyr::group_by(node)%>%
+  tally()
+
+# Step 3
+Sankey3 <- merge(Sankey1, Sankey2, by.x = 'node', by.y = 'node', all.x = TRUE)
+
+# Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+ggplot(Sankey3, aes(x = x, 
+                    next_x = next_x, 
+                    node = node, 
+                    next_node = next_node,
+                    fill = node,
+                    label = paste0(node,",\nn=", n) )) +
+  geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+  geom_sankey_label(aes(x = c(rep(2.1,53), rep(.78,592), rep(2.1,283), rep(2.1,130), rep(2.1,83), rep(2.1,43))),
+                    size = 3.5, color = 1, fill = "white") +
+  scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70", "NK"="#a6ad59", "LO"="#60a5a3",
+                               "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
+                    name = "",
+                    labels = c('Ikke risikovurdert tidligere',
+                               'Ingen kjent risiko (NK)',
+                               'Lav risiko (LO)',
+                               'Potensielt hoey risiko (PH)',
+                               'Hoey risiko (HI)',
+                               'Svaert hoey risiko (SE)')) +
+  labs(x = "") +
+  theme_sankey(base_size = 16) +
+  theme(legend.position="none",
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA))
+}
+ggsave('20221215/plots_moete20230106/doerstokkarter/endring_HS2.png', bg='transparent')
+
 
 ##---         2.4.5 Matrise-plot ---####
 
