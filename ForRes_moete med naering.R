@@ -529,13 +529,15 @@ ggsave('20221215/plots_moete20230106/karplanter/endring_matrise.png', bg='transp
 # Vi ønsker de ovenstående plots bare for (reviderte) fremmede treslag (.xlsx-filen 'Treslag', fanen 'Treslag 2.0').
 # Last inn filen og sjekk at navnene er kodet likt
 treslag <- read.csv2("Treslag.csv")
+treslag2 <- treslag %>%
+  filter(Tre.eller.busk.eller.baade.og %in% c('T', 'T B', 't', 't b'))
 
-# Filtrer dataframes jfr. navne på treslag
+# Filtrer dataframes jfr. navne på treslag 
 ferdig_treslag <- ferdig %>%
-  filter(VitenskapeligNavn %in% treslag$VitenskapeligNavn)
+  filter(VitenskapeligNavn %in% treslag2$VitenskapeligNavn) 
 
 ferdig_long.endring_treslag <- ferdig_long.endring %>%
-  filter(VitenskapeligNavn %in% treslag$VitenskapeligNavn)
+  filter(VitenskapeligNavn %in% treslag2$VitenskapeligNavn)
 
 
 ##---         2.3.1 Risikokategori  ---####
@@ -680,6 +682,64 @@ ferdig_treslag %>%
                           plot.background = element_rect(fill='transparent', color=NA))
                 }
 ggsave('20221215/plots_moete20230106/treslag/endring.png', bg='transparent')
+
+# Samme plot som over, men med verdier - IKKE FERDIG, MÅ FIKSES
+{
+  # Step 1
+  Sankey1_tre <- ferdig_treslag %>%
+    #filter( Fremmedartsstatus == "Doerstokkart",
+    #        Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
+    select(Kategori2018, Kategori2023, ) %>%
+    mutate(Kategori2018_edit =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",
+                                          Kategori2018 =="NK" ~ "NK",
+                                          Kategori2018 =="LO" ~ "LO",
+                                          Kategori2018 =="PH" ~ "PH",
+                                          Kategori2018 =="HI" ~ "HI",
+                                          Kategori2018 =="SE" ~ "SE"),
+           .keep = "all") %>%
+    rename(' ' = 'Kategori2018_edit' ,
+           'Risikokategori 2023' = 'Kategori2023' ) %>%
+    make_long(` `, `Risikokategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere", "NK","LO","PH","HI","SE"))))
+  
+  # Step 2
+  Sankey2_tre <- Sankey1_tre %>%
+    dplyr::group_by(node) %>%
+    tally()
+  
+  Sankey2.1_tre <- Sankey1_tre %>%
+    dplyr::group_by(next_node) %>%
+    tally()
+  
+  # Step 3
+  Sankey3_tre <- merge(Sankey1_tre, Sankey2_tre, by.x = 'node', by.y = 'node', all.x = TRUE)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3_tre, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    #geom_sankey_label(aes(x = c(rep(.78,10), rep(.78,15), rep(.78,63), rep(.78,23), rep(.78,16), rep(.78,18),rep(2.1,5))),
+    #                  size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70", "NK"="#a6ad59", "LO"="#60a5a3",
+                                 "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e"),
+                      name = "",
+                      labels = c('Ikke risikovurdert tidligere',
+                                 'Ingen kjent risiko (NK)',
+                                 'Lav risiko (LO)',
+                                 'Potensielt hoey risiko (PH)',
+                                 'Hoey risiko (HI)',
+                                 'Svaert hoey risiko (SE)')) +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+}
 
 
 ##---         2.3.5 Matrise-plot ---####
@@ -1029,4 +1089,5 @@ ggplot(cont_DS, aes(x = Kategori2023, y = Kategori2018)) +
         panel.grid.minor = element_blank())
 
 ggsave('20221215/plots_moete20230106/doerstokkarter/endring_matrise.png', bg='transparent')
+
 
