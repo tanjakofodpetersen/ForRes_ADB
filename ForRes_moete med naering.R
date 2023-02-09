@@ -611,7 +611,10 @@ ggsave('20230208/karplanter/endring_matrise.png', bg='transparent')
 # Last inn filen og sjekk at navnene er kodet likt
 treslag <- read.csv2("Treslag.csv")
 treslag2 <- treslag %>%
-  filter(Tre.eller.busk.eller.baade.og %in% c('T', 'T B', 't', 't b'))
+  filter(Tre.eller.busk.eller.baade.og %in% c('T',
+                                              'T B',
+                                              't',
+                                              't b'))
 
 # Filtrer dataframes jfr. navne på treslag 
 ferdig_treslag <- ferdig %>%
