@@ -27,7 +27,7 @@ aronia %>%
                     geom_sankey_label(size = 3, color = 1, fill = "white") +
                     scale_fill_manual(values = c("Aronia arbutifolia"="#d7191c",  #lightcoral
                                                  "Aronia melanocarpa"="#abd9e9",  #steelblue3
-                                                 "Aronia xprunifolia"="#fdae61",   #khaki1
+                                                 "Aronia \U00D7prunifolia"="#fdae61",   #khaki1
                                                  "Aronia sp."="gray60",
                                                  "Aronia eller Sorbaronia"="gray60",
                                                  "Sorbaronia mitschurinii"="#2c7bb6"),  #olivedrab4
@@ -60,8 +60,8 @@ Sankey3$n[Sankey3$node == 'Aronia melanocarpa' & Sankey3$x == 'Foer revisjon'] <
 Sankey3$n[Sankey3$node == 'Aronia melanocarpa' & Sankey3$x == 'Etter revisjon'] <- '8'
 # Sorter i rekkefølge aht. labelling
 Sankey3 <- Sankey3 %>%
-  arrange(factor(node, levels = c('Aronia arbutifolia','Aronia xprunifolia','Aronia melanocarpa','Sorbaronia mitschurinii','Aronia sp.','Aronia eller Sorbaronia')),
-          factor(next_node, levels = c('Aronia arbutifolia','Aronia xprunifolia','Aronia melanocarpa','Sorbaronia mitschurinii','Aronia sp.','Aronia eller Sorbaronia')))
+  arrange(factor(node, levels = c('Aronia arbutifolia','Aronia \U00D7prunifolia','Aronia melanocarpa','Sorbaronia mitschurinii','Aronia sp.','Aronia eller Sorbaronia')),
+          factor(next_node, levels = c('Aronia arbutifolia','Aronia \U00D7prunifolia','Aronia melanocarpa','Sorbaronia mitschurinii','Aronia sp.','Aronia eller Sorbaronia')))
 
 # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
 ### Fargeblind-vennlig
@@ -76,7 +76,7 @@ ggplot(Sankey3, aes(x = x,
                     size = 3, color = 1, fill = "white") +
   scale_fill_manual(values = c("Aronia arbutifolia"="#d7191c",  #lightcoral
                                "Aronia melanocarpa"="#abd9e9",  #steelblue3
-                               "Aronia xprunifolia"="#fdae61",   #khaki1
+                               "Aronia \U00D7prunifolia"="#fdae61",   #khaki1
                                "Aronia sp."="gray60",
                                "Aronia eller Sorbaronia"="gray60",
                                "Sorbaronia mitschurinii"="#2c7bb6"),  #olivedrab4
@@ -101,7 +101,7 @@ ggplot(Sankey3, aes(x = x,
                     size = 3, color = 1, fill = "white") +
   scale_fill_manual(values = c("Aronia arbutifolia"="lightcoral",  
                                "Aronia melanocarpa"="steelblue3",
-                               "Aronia xprunifolia"="khaki1",  
+                               "Aronia \U00D7prunifolia"="khaki1",  
                                "Aronia sp."="gray60",
                                "Aronia eller Sorbaronia"="gray60",
                                "Sorbaronia mitschurinii"="olivedrab4"),
