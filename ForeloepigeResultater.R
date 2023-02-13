@@ -358,7 +358,98 @@ ferdig %>%
 }
 ggsave('alleArter/endring.png', bg='transparent')
 
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                         filter(is.na(next_node)) %>%
+                         mutate(n2 = n,
+                                x = 'Kategori 2023',
+                                next_x = NA)  %>%
+                         relocate(x, node, next_x, next_node, n, n2) %>%
+                         select(-next_node),
+                       
+                       Sankey2 %>%
+                         filter(!is.na(next_node)) %>%
+                         group_by(node) %>%
+                         summarise(n2 = sum(n)) %>%
+                         mutate(next_node = 'x', n = NA,
+                                x = 'Kategori 2018',
+                                next_x = 'Kategori 2023') %>%
+                         relocate(x, node, next_x, next_node, n, n2)%>%
+                         select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                          next_x = next_x, 
+                          node = node, 
+                          next_node = next_node,
+                          fill = node,
+                          label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(rep(.78,965),    # Ikke risikovurdert tidligere
+                                rep(2.1,192),  # NR
+                                rep(.78,440), rep(2.1,332),   # NK
+                                rep(.78,726), rep(2.1,1159),  # LO
+                                rep(.78,104), rep(2.1,366),  # PH
+                                rep(.78,104),rep(2.1,196),  # HI
+                                rep(.78,131), rep(2.1,225))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('alleArter/endring_verdier.png', bg='transparent')
+
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
+{
 ferdig %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                    Kategori2018 == "NK" ~ "NK",
@@ -404,7 +495,98 @@ ferdig %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
+
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(#rep(.78,965),    # Ikke risikovurdert tidligere
+                                rep(2.1,26),  # NR
+                                rep(.78,440), rep(2.1,162),   # NK
+                                rep(.78,726), rep(2.1,782),  # LO
+                                rep(.78,104), rep(2.1,231),  # PH
+                                rep(.78,104), rep(2.1,135),  # HI
+                                rep(.78,131), rep(2.1,169))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('alleArter/endring_reviderteArter_verdier.png', bg='transparent')
 
 
 ##---         2.1.5 Matrise-plot ---####
@@ -612,6 +794,7 @@ ggsave('karplanter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.2.4 Endring i kategori  ---####
+{
 ferdig %>%
   filter( Ekspertkomite =="Karplanter") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
@@ -659,9 +842,102 @@ ferdig %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('karplanter/endring.png', bg='transparent')
 
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    filter( Ekspertkomite =="Karplanter") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(rep(.78,289),    # Ikke risikovurdert tidligere
+                                rep(2.1,84),  # NR
+                                rep(.78,358), rep(2.1,198),   # NK
+                                rep(.78,413), rep(2.1,589),  # LO
+                                rep(.78,46), rep(2.1,173),  # PH
+                                rep(.78,52),rep(2.1,85),  # HI
+                                rep(.78,72), rep(2.1,101))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('karplanter/endring_verdier.png', bg='transparent')
+
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
+{
 ferdig %>%
   filter( Ekspertkomite =="Karplanter") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
@@ -708,8 +984,99 @@ ferdig %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
 
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    filter( Ekspertkomite =="Karplanter") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(#rep(.78,289),    # Ikke risikovurdert tidligere
+                                rep(2.1,13),  # NR
+                                rep(.78,358), rep(2.1,124),   # NK
+                                rep(.78,413), rep(2.1,466),  # LO
+                                rep(.78,46), rep(2.1,163),  # PH
+                                rep(.78,52),rep(2.1,80),  # HI
+                                rep(.78,72), rep(2.1,95))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('karplanter/endring_reviderteArter_verdier.png', bg='transparent')
 
 ##---         2.2.5 Matrise-plot ---####
 
@@ -930,6 +1297,7 @@ ggsave('treslag/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.3.4 Endring i kategori  ---####
+{
 ferdig_treslag %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                    Kategori2018 == "NK" ~ "NK",
@@ -976,9 +1344,11 @@ ferdig_treslag %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('treslag/endring.png', bg='transparent')
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
+{
 ferdig_treslag %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                    Kategori2018 == "NK" ~ "NK",
@@ -1024,6 +1394,7 @@ ferdig_treslag %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('treslag/endring_reviderteArter.png', bg='transparent')
 
 ### Samme plots som over, men med verdier
@@ -1399,6 +1770,7 @@ ggsave('doerstokkarter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.4.4 Endring i kategori  ---####
+{
 ferdig %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                    Kategori2018 == "NK" ~ "NK",
@@ -1445,8 +1817,101 @@ ferdig %>%
                     theme(legend.position="none",
                           panel.background = element_rect(fill='transparent', color = NA),
                           plot.background = element_rect(fill='transparent', color=NA))
-                }
+                                        }
+}
 ggsave('doerstokkarter/endring.png', bg='transparent')
+
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    filter( Fremmedartsstatus == "Doerstokkart") %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(rep(.78,687),    # Ikke risikovurdert tidligere
+                                #rep(2.1,84),  # NR
+                                rep(.78,142), rep(2.1,257),   # NK
+                                rep(.78,154), rep(2.1,528),  # LO
+                                rep(.78,21), rep(2.1,112),  # PH
+                                rep(.78,29),rep(2.1,84),  # HI
+                                rep(.78,23), rep(2.1,75))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('doerstokkarter/endring_verdier.png', bg='transparent')
+
 
 ##---         2.4.5 Matrise-plot ---####
 
@@ -1646,6 +2111,7 @@ ferdig_long.endring %>%
 ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring.png', bg='transparent')
 
 ##---         2.5.4 Endring i kategori  ---####
+{
 ferdig %>%
   filter( Fremmedartsstatus == "Doerstokkart",
           Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
@@ -1694,6 +2160,7 @@ ferdig %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
 
 ## Samme plot som over, men med verdier
@@ -1936,6 +2403,7 @@ ggsave('marineArter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.6.4 Endring i kategori  ---####
+{
 ferdig %>%
   filter(Marint == "True" & Terrestrisk == "False") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
@@ -1983,9 +2451,103 @@ ferdig %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('marineArter/endring.png', bg='transparent')
 
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    filter(Marint == "True" & Terrestrisk == "False") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(rep(.78,116),    # Ikke risikovurdert tidligere
+                                rep(2.1,11),  # NR
+                                rep(.78,7), rep(2.1,6),   # NK
+                                rep(.78,53), rep(2.1,113),  # LO
+                                rep(.78,20), rep(2.1,32),  # PH
+                                rep(.78,18),rep(2.1,29),  # HI
+                                rep(.78,23), rep(2.1,46))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('marineArter/endring_verdier.png', bg='transparent')
+
+
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
+{
 ferdig %>%
   filter(Marint == "True" & Terrestrisk == "False") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
@@ -2032,7 +2594,99 @@ ferdig %>%
                                                   panel.background = element_rect(fill='transparent', color = NA),
                                                   plot.background = element_rect(fill='transparent', color=NA))
                                         }
+}
 ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
+
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    filter(Marint == "True" & Terrestrisk == "False") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(#rep(.78,116),    # Ikke risikovurdert tidligere
+                                rep(2.1,4),  # NR
+                                rep(.78,7), #rep(2.1,6),   # NK
+                                rep(.78,53), rep(2.1,54),  # LO
+                                rep(.78,20), rep(2.1,14),  # PH
+                                rep(.78,18),rep(2.1,21),  # HI
+                                rep(.78,23), rep(2.1,28))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('marineArter/endring_reviderteArter_verdier.png', bg='transparent')
 
 
 ##---         2.6.5 Matrise-plot ---####
