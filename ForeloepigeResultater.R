@@ -256,6 +256,9 @@ ggsave('alleArter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.1.4 Endring i kategori  ---####
+
+# Versjon med kategorier skrevet helt ut:
+{
 ferdig %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                    Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
@@ -301,34 +304,85 @@ ferdig %>%
                     theme(legend.position="none",
                           panel.background = element_rect(fill='transparent', color = NA),
                           plot.background = element_rect(fill='transparent', color=NA))
-                }
+                                        }
+}
+
+# Versjon med forkortet kategori
+{
+  ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
+}
 ggsave('alleArter/endring.png', bg='transparent')
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 ferdig %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                ~ordered(.x, levels = c("NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -337,12 +391,12 @@ ferdig %>%
                                                         fill = node )) +
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                            scale_fill_manual(values = c("NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -561,28 +615,28 @@ ggsave('karplanter/aarsakEndring.png', bg='transparent')
 ferdig %>%
   filter( Ekspertkomite =="Karplanter") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
                 ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                                        "NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -592,12 +646,12 @@ ferdig %>%
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
                                             scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                                                         "NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -611,28 +665,28 @@ ggsave('karplanter/endring.png', bg='transparent')
 ferdig %>%
   filter( Ekspertkomite =="Karplanter") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                ~ordered(.x, levels = c("NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -641,12 +695,12 @@ ferdig %>%
                                                         fill = node )) +
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                            scale_fill_manual(values = c("NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -878,28 +932,28 @@ ggsave('treslag/aarsakEndring.png', bg='transparent')
 ##---         2.3.4 Endring i kategori  ---####
 ferdig_treslag %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
                 ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                                        "NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -909,12 +963,12 @@ ferdig_treslag %>%
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
                                             scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                                                         "NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -927,28 +981,28 @@ ggsave('treslag/endring.png', bg='transparent')
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 ferdig_treslag %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                ~ordered(.x, levels = c("NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -957,12 +1011,12 @@ ferdig_treslag %>%
                                                         fill = node )) +
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                            scale_fill_manual(values = c("NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -977,28 +1031,28 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
   # Step 1
   Sankey1_tre <- ferdig_treslag %>%
     mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                     Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                     Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                     Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                     Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                     Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                     Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                     Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                     Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                     Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                     Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
     rename('Kategori 2018' = 'Kategori2018' ,
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
                   ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                          "Ikke risikovurdert (NR)",
-                                          "Ingen kjent risiko (NK)",
-                                          "Lav risiko (LO)",
-                                          "Potensielt h\U00F8y risiko (PH)",
-                                          "H\U00F8y risiko (HI)",
-                                          "Sv\U00E6rt h\U00F8y risiko (SE)"))))
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
   
   # Step 2
   Sankey2_tre <- Sankey1_tre %>%
@@ -1045,12 +1099,12 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
                                 rep(.78,11),rep(2.1,18),  # HI
                                 rep(.78,12), rep(2.1,19))),  # SE)),
                       size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("Ikke risikovurdert (NR)"="gray90",
-                                 "Ingen kjent risiko (NK)"="#a6ad59",
-                                 "Lav risiko (LO)"="#60a5a3",
-                                 "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                 "H\U00F8y risiko (HI)"="#233368",
-                                 "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
                       name = "") +
     labs(x = "") +
     theme_sankey(base_size = 16) +
@@ -1067,28 +1121,28 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
   # Step 1
   Sankey1_tre <- ferdig_treslag %>%
     mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                     Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                     Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                     Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                     Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                     Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                     Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                     Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                     Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                     Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                     Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
     filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
     rename('Kategori 2018' = 'Kategori2018' ,
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert (NR)",
-                                          "Ingen kjent risiko (NK)",
-                                          "Lav risiko (LO)",
-                                          "Potensielt h\U00F8y risiko (PH)",
-                                          "H\U00F8y risiko (HI)",
-                                          "Sv\U00E6rt h\U00F8y risiko (SE)"))))
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
   
   # Step 2
   Sankey2_tre <- Sankey1_tre %>%
@@ -1134,12 +1188,12 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
                                 rep(.78,11),rep(2.1,18),  # HI
                                 rep(.78,12), rep(2.1,18))),  # SE)),
                       size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("Ikke risikovurdert (NR)"="gray90",
-                                 "Ingen kjent risiko (NK)"="#a6ad59",
-                                 "Lav risiko (LO)"="#60a5a3",
-                                 "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                 "H\U00F8y risiko (HI)"="#233368",
-                                 "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
                       name = "") +
     labs(x = "") +
     theme_sankey(base_size = 16) +
@@ -1347,29 +1401,29 @@ ggsave('doerstokkarter/aarsakEndring.png', bg='transparent')
 ##---         2.4.4 Endring i kategori  ---####
 ferdig %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   filter( Fremmedartsstatus == "Doerstokkart") %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
                 ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                                        "NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                   ggplot(., aes(x = x, 
                                 next_x = next_x, 
                                 node = node, 
@@ -1379,12 +1433,12 @@ ferdig %>%
                     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                     geom_sankey_label(size = 3.5, color = 1, fill = "white") +
                     scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                 "Ikke risikovurdert (NR)"="gray90",
-                                                 "Ingen kjent risiko (NK)"="#a6ad59",
-                                                 "Lav risiko (LO)"="#60a5a3",
-                                                 "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                 "H\U00F8y risiko (HI)"="#233368",
-                                                 "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                                 "NR"="gray90",
+                                                 "NK"="#a6ad59",
+                                                 "LO"="#60a5a3",
+                                                 "PH"="#1b586c",
+                                                 "HI"="#233368",
+                                                 "SE"="#602d5e"),
                                       name = "") +
                     labs(x = "") +
                     theme_sankey(base_size = 16) +
@@ -1596,28 +1650,28 @@ ferdig %>%
   filter( Fremmedartsstatus == "Doerstokkart",
           Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
                 ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                                        "NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -1627,12 +1681,12 @@ ferdig %>%
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
                                             scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                                                         "NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -1649,28 +1703,28 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
     filter( Fremmedartsstatus == "Doerstokkart",
             Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
     mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                     Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                     Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                     Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                     Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                     Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                     Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                     Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                     Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                     Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                     Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
     rename('Kategori 2018' = 'Kategori2018' ,
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
                   ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                          "Ikke risikovurdert (NR)",
-                                          "Ingen kjent risiko (NK)",
-                                          "Lav risiko (LO)",
-                                          "Potensielt h\U00F8y risiko (PH)",
-                                          "H\U00F8y risiko (HI)",
-                                          "Sv\U00E6rt h\U00F8y risiko (SE)"))))
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
   
   # Step 2
   Sankey2 <- Sankey1 %>%
@@ -1717,20 +1771,20 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
                                 rep(2.1,47))),  # SE
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                 "Ikke risikovurdert (NR)"="gray90",
-                                 "Ingen kjent risiko (NK)"="#a6ad59",
-                                 "Lav risiko (LO)"="#60a5a3",
-                                 "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                 "H\U00F8y risiko (HI)"="#233368",
-                                 "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e")) +
+                                 "NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e")) +
     labs(x = "") +
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
+  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('doerstokkarter/ArterFraHorisontskanning/endring_verdier.png', bg='transparent')
-
 
 
 ##---     2.6 Marine arter  ---####
@@ -1885,28 +1939,28 @@ ggsave('marineArter/aarsakEndring.png', bg='transparent')
 ferdig %>%
   filter(Marint == "True" & Terrestrisk == "False") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
                 ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                                        "NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -1916,12 +1970,12 @@ ferdig %>%
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
                                             scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                                                         "NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
@@ -1935,28 +1989,28 @@ ggsave('marineArter/endring.png', bg='transparent')
 ferdig %>%
   filter(Marint == "True" & Terrestrisk == "False") %>%
   mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+                                   Kategori2018 == "NK" ~ "NK",
+                                   Kategori2018 == "LO" ~ "LO",
+                                   Kategori2018 == "PH" ~ "PH",
+                                   Kategori2018 == "HI" ~ "HI",
+                                   Kategori2018 == "SE" ~ "SE"),
+         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                   Kategori2023 == "NK" ~ "NK",
+                                   Kategori2023 == "LO" ~ "LO",
+                                   Kategori2023 == "PH" ~ "PH",
+                                   Kategori2023 == "HI" ~ "HI",
+                                   Kategori2023 == "SE" ~ "SE")) %>%
   filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
   rename('Kategori 2018' = 'Kategori2018' ,
          'Kategori 2023' = 'Kategori2023' ) %>%
   make_long(`Kategori 2018`, `Kategori 2023`) %>%
   mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                ~ordered(.x, levels = c("NR",
+                                        "NK",
+                                        "LO",
+                                        "PH",
+                                        "HI",
+                                        "SE")))) %>% {
                                           ggplot(., aes(x = x, 
                                                         next_x = next_x, 
                                                         node = node, 
@@ -1965,12 +2019,12 @@ ferdig %>%
                                                         fill = node )) +
                                             geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
                                             geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert (NR)"="gray90",
-                                                                         "Ingen kjent risiko (NK)"="#a6ad59",
-                                                                         "Lav risiko (LO)"="#60a5a3",
-                                                                         "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                                         "H\U00F8y risiko (HI)"="#233368",
-                                                                         "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                            scale_fill_manual(values = c("NR"="gray90",
+                                                                         "NK"="#a6ad59",
+                                                                         "LO"="#60a5a3",
+                                                                         "PH"="#1b586c",
+                                                                         "HI"="#233368",
+                                                                         "SE"="#602d5e"),
                                                               name = "") +
                                             labs(x = "") +
                                             theme_sankey(base_size = 16) +
