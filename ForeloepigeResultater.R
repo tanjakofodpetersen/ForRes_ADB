@@ -123,11 +123,11 @@ ferdig %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent risiko\nNK",
-                   "LO" = "Lav risiko\nLO",
-                   "PH" = "Potensielt h\U00F8y risiko\nPH",
-                   "HI" = "H\U00F8y risiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y risko\nSE")) +
+                   "NK" = "Ingen kjent \nrisiko\nNK",
+                   "LO" = "Lav \nrisiko\nLO",
+                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+                   "HI" = "H\U00F8y \nrisiko\nHI",
+                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
                                    "NK"="#a6ad59",
                                    "LO"="#60a5a3",
@@ -141,9 +141,10 @@ ferdig %>%
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16))
   }
 ggsave('alleArter/risikokategori.png', bg='transparent')
+
 
 ##---         2.1.2 Etableringsklasse ---####
 ferdig %>%
@@ -661,11 +662,11 @@ ferdig %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent risiko\nNK",
-                   "LO" = "Lav risiko\nLO",
-                   "PH" = "Potensielt h\U00F8y risiko\nPH",
-                   "HI" = "H\U00F8y risiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y risko\nSE")) +
+                   "NK" = "Ingen kjent \nrisiko\nNK",
+                   "LO" = "Lav \nrisiko\nLO",
+                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+                   "HI" = "H\U00F8y \nrisiko\nHI",
+                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
         "NK"="#a6ad59",
         "LO"="#60a5a3",
@@ -679,7 +680,7 @@ ferdig %>%
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16))
   }
 ggsave('karplanter/risikokategori.png', bg='transparent')
 
@@ -1166,11 +1167,11 @@ ferdig_treslag %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent risiko\nNK",
-                   "LO" = "Lav risiko\nLO",
-                   "PH" = "Potensielt h\U00F8y risiko\nPH",
-                   "HI" = "H\U00F8y risiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y risko\nSE")) +
+                   "NK" = "Ingen kjent \nrisiko\nNK",
+                   "LO" = "Lav \nrisiko\nLO",
+                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+                   "HI" = "H\U00F8y \nrisiko\nHI",
+                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
                                    "NK"="#a6ad59",
                                    "LO"="#60a5a3",
@@ -1184,7 +1185,7 @@ ferdig_treslag %>%
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16))
   }
 ggsave('treslag/risikokategori.png', bg='transparent')
 
@@ -1647,12 +1648,12 @@ ferdig %>%
       labs(x = "", y = "") +
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
-        labels = c("NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent risiko\nNK",
-                   "LO" = "Lav risiko\nLO",
-                   "PH" = "Potensielt h\U00F8y risiko\nPH",
-                   "HI" = "H\U00F8y risiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y risko\nSE")) +
+        labels = c(#"NR" = "Ikke risikovurdert\nNR",
+                   "NK" = "Ingen \nkjent risiko\nNK",
+                   "LO" = "Lav \nrisiko\nLO",
+                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+                   "HI" = "H\U00F8y \nrisiko\nHI",
+                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
       theme_minimal() +
@@ -1662,7 +1663,7 @@ ferdig %>%
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16))
   }
 ggsave('doerstokkarter/risikokategori.png', bg='transparent')
 
@@ -1986,12 +1987,12 @@ ferdig %>%
       labs(x = "", y = "") +
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
-        labels = c("NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent risiko\nNK",
+        labels = c("NR" = "Ikke \nrisikovurdert\nNR",
+                   "NK" = "Ingen kjent \nrisiko\nNK",
                    "LO" = "Lav risiko\nLO",
-                   "PH" = "Potensielt h\U00F8y risiko\nPH",
-                   "HI" = "H\U00F8y risiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y risko\nSE")) +
+                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+                   "HI" = "H\U00F8y \nrisiko\nHI",
+                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
       theme_minimal() +
@@ -2001,7 +2002,7 @@ ferdig %>%
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16))
   }
 ggsave('doerstokkarter/ArterFraHorisontskanning/risikokategori.png', bg='transparent')
 
@@ -2270,11 +2271,11 @@ ferdig %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-          "NK" = "Ingen kjent risiko\nNK",
-          "LO" = "Lav risiko\nLO",
-          "PH" = "Potensielt h\U00F8y risiko\nPH",
-          "HI" = "H\U00F8y risiko\nHI",
-          "SE" = "Sv\U00E6rt h\U00F8y risko\nSE")) +
+          "NK" = "Ingen kjent \nrisiko\nNK",
+          "LO" = "Lav \nrisiko\nLO",
+          "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+          "HI" = "H\U00F8y \nrisiko\nHI",
+          "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
         "NK"="#a6ad59",
         "LO"="#60a5a3",
@@ -2288,7 +2289,7 @@ ferdig %>%
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16))
   }
 ggsave('marineArter/risikokategori.png', bg='transparent')
 
@@ -2781,7 +2782,7 @@ ggplot(trinn3,
         axis.ticks.y = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = .8, size = 12))
 
-### AARSAK TIL ENDRING - IKKE FERDIG!
+### AARSAK TIL ENDRING
 # OBS summen av barene her er ikke antallet av arter; de kan ha hatt mer en én endringskategori
 ferdig_long.endring %>%
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
@@ -2818,6 +2819,7 @@ ferdig_long.endring %>%
                    axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
          }
 
+# Årsaker for hver art
 ferdig_long.endring %>%
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
          Aarsak_norsk != "",) %>%
@@ -2853,6 +2855,49 @@ ferdig_long.endring %>%
         axis.ticks.x = element_blank(),
         axis.text.x = element_text(angle = 90, hjust = .9, size = 12)) 
 
+# Matrise plot
+ferdig_long.endring %>%
+  filter(!Kategori2018 == 'Ikke risikovurdert tidligere') %>%  
+  filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
+         Aarsak_norsk != "",) %>%
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn, Aarsak_norsk) %>%
+  tally() %>%
+  as.data.frame() %>%
+  complete(VitenskapeligNavn, Aarsak_norsk, fill = list(n = 0)) %>%
+  mutate(farge = case_when(n == 0 ~ 'NA',     # Legg til bakgrunnsfarger iht. aarsak
+                           (Aarsak_norsk == 'Reell endring' & n == 1) ~ 'Reell endring',
+                           (Aarsak_norsk == 'Endret tolkning av retningslinjer' & n == 1) ~ 'Endret tolkning av retningslinjer',
+                           (Aarsak_norsk == 'Ny tolkning av data' & n == 1) ~ 'Ny tolkning av data',
+                           (Aarsak_norsk == 'Endrede avgrensninger/retningslinjer' & n == 1) ~ 'Endrede avgrensninger/retningslinjer',
+                           (Aarsak_norsk == 'Endret status' & n == 1) ~ 'Endret status')) %>%
+  left_join(ferdig[,c("VitenskapeligNavn","Ekspertkomite")]) %>%
+  arrange(Ekspertkomite) %>%
+{
+ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
+  geom_tile(aes(fill = farge), color = 'gray40') +
+  #geom_tile(aes(fill = as.character(n))) +
+  #geom_text(aes(label = n), size = 6) +
+  scale_fill_manual(values = c('Reell endring' = '#e5b445',
+                               'Endret tolkning av retningslinjer' = '#71B581',
+                               'Ny tolkning av data' = '#d2c160',
+                               'Endrede avgrensninger/retningslinjer' = '#35a3b2',
+                               'Endret status' = '#5FB7B1'), na.value = 'white') +  labs(x = '', y = '') +
+  scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                              "Endret status"="Endret status",
+                              "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                              #"Ny kunnskap"="Ny kunnskap",
+                              "Ny tolkning av data"="Ny tolkning av data",
+                              "Reell endring"="Reell endring")) +
+  theme(legend.position = 'none',
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA),
+        #axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = .9),
+        #axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =12),
+        #axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+}
 
-
-
+## FINN MÅTE Å SORTERE BASERT PÅ EKSPERTKOMITE
