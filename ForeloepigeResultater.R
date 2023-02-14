@@ -2872,6 +2872,7 @@ ferdig_long.endring %>%
                            (Aarsak_norsk == 'Endrede avgrensninger/retningslinjer' & n == 1) ~ 'Endrede avgrensninger/retningslinjer',
                            (Aarsak_norsk == 'Endret status' & n == 1) ~ 'Endret status')) %>%
   left_join(ferdig[,c("VitenskapeligNavn","Ekspertkomite")]) %>%
+  mutate(Ekspertkomite = factor(Ekspertkomite)) %>%
   arrange(Ekspertkomite) %>%
 {
 ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
