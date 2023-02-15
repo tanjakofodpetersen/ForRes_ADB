@@ -222,7 +222,8 @@ ggsave('alleArter/etableringsklasse_kake.png', bg='transparent')
 
 ##---         2.1.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
-  filter(Aarsak_norsk != "",) %>% 
+  filter(Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
     ggplot(.,
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
@@ -255,6 +256,27 @@ ferdig_long.endring %>%
   }
 ggsave('alleArter/aarsakEndring.png', bg='transparent')
 
+##---             2.1.3.1 Aarsak til endring; oppsummering  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring %>%
+  filter(Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = antallAarsaker)) +
+      geom_bar(color = 'black', fill = '#e5b445') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 ##---         2.1.4 Endring i kategori  ---####
 
@@ -760,7 +782,8 @@ ggsave('karplanter/etableringsklasse_kake.png', bg='transparent')
 ##---         2.2.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
   filter(Ekspertkomite == "Karplanter",
-         Aarsak_norsk != "",) %>% 
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
     ggplot(.,
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
@@ -793,6 +816,29 @@ ferdig_long.endring %>%
   }
 ggsave('karplanter/aarsakEndring.png', bg='transparent')
 
+
+##---             2.2.3.1 Aarsak til endring; oppsummering  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring %>%
+  filter(Ekspertkomite == 'Karplanter',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = antallAarsaker)) +
+      geom_bar(color = 'black', fill = '#e5b445') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 ##---         2.2.4 Endring i kategori  ---####
 {
@@ -1263,7 +1309,8 @@ ggsave('treslag/etableringsklasse_kake.png', bg='transparent')
 
 ##---         2.3.3 Aarsak til endring  ---####
 ferdig_long.endring_treslag %>%
-  filter(Aarsak_norsk != "",) %>% 
+  filter(Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
     ggplot(.,
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
@@ -1295,6 +1342,28 @@ ferdig_long.endring_treslag %>%
             axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
   }
 ggsave('treslag/aarsakEndring.png', bg='transparent')
+
+##---             2.3.3.1 Aarsak til endring; oppsummering  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring.treslag %>%
+  filter(Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = antallAarsaker)) +
+      geom_bar(color = 'black', fill = '#e5b445') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 
 ##---         2.3.4 Endring i kategori  ---####
@@ -1736,7 +1805,8 @@ ggsave('doerstokkarter/etableringsklasse_kake.png', bg='transparent')
 ##---         2.4.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
   filter(Fremmedartsstatus == "Doerstokkart",
-         Aarsak_norsk != "",) %>% 
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
     ggplot(.,
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
@@ -1768,6 +1838,29 @@ ferdig_long.endring %>%
             axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
   }
 ggsave('doerstokkarter/aarsakEndring.png', bg='transparent')
+
+##---             2.4.3.1 Aarsak til endring; oppsummering  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == 'Doerstokkart',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = antallAarsaker)) +
+      geom_bar(color = 'black', fill = '#e5b445') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 
 ##---         2.4.4 Endring i kategori  ---####
@@ -2078,7 +2171,8 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/etableringsklasse_kake.png', bg=
 ferdig_long.endring %>%
   filter(Fremmedartsstatus == "Doerstokkart",
          Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere',
-         Aarsak_norsk != "",) %>% 
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
     ggplot(.,
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
@@ -2110,6 +2204,31 @@ ferdig_long.endring %>%
             axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
   }
 ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring.png', bg='transparent')
+
+##---             2.5.3.1 Aarsak til endring; oppsummering  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = antallAarsaker)) +
+      geom_bar(color = 'black', fill = '#e5b445') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+
 
 ##---         2.5.4 Endring i kategori  ---####
 {
@@ -2369,7 +2488,8 @@ ggsave('marineArter/etableringsklasse_kake.png', bg='transparent')
 ##---         2.6.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
   filter(Marint == "True" & Terrestrisk == "False",
-         Aarsak_norsk != "",) %>% 
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
     ggplot(.,
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
@@ -2402,6 +2522,28 @@ ferdig_long.endring %>%
   }
 ggsave('marineArter/aarsakEndring.png', bg='transparent')
 
+##---             2.6.3.1 Aarsak til endring; oppsummering  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring %>%
+  filter(Marint == "True" & Terrestrisk == "False",
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = antallAarsaker)) +
+      geom_bar(color = 'black', fill = '#e5b445') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 ##---         2.6.4 Endring i kategori  ---####
 {
@@ -2786,7 +2928,8 @@ ggplot(trinn3,
 # OBS summen av barene her er ikke antallet av arter; de kan ha hatt mer en én endringskategori
 ferdig_long.endring %>%
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
-         Aarsak_norsk != "",) %>%
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>%
   distinct(VitenskapeligNavn, Aarsak_norsk) %>%  # "Reel endring' har innimellom to rader om det var både "Ny kunnskap" og "Reell endring" i rådata
   {
     ggplot(.,
@@ -2822,7 +2965,8 @@ ferdig_long.endring %>%
 # Årsaker for hver art
 ferdig_long.endring %>%
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
-         Aarsak_norsk != "",) %>%
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>%
   distinct(VitenskapeligNavn, Aarsak_norsk) %>%
   group_by(VitenskapeligNavn, Aarsak_norsk) %>%
   tally() %>%
@@ -2859,7 +3003,8 @@ ferdig_long.endring %>%
 ferdig_long.endring %>%
   filter(!Kategori2018 == 'Ikke risikovurdert tidligere') %>%  
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
-         Aarsak_norsk != "",) %>%
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>%
   distinct(VitenskapeligNavn, Aarsak_norsk) %>%
   group_by(VitenskapeligNavn, Aarsak_norsk) %>%
   tally() %>%
@@ -2916,7 +3061,8 @@ ferdig_long.endring %>%
 ##---     3.4 Plot antall årsaker til endring ---####
 ferdig_long.endring %>%
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
-         Aarsak_norsk != "",) %>%
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>%
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% 
   left_join(ferdig[,c("VitenskapeligNavn","Ekspertkomite")]) %>%
   mutate(Ekspertkomite = factor(Ekspertkomite)) %>%
@@ -2949,5 +3095,5 @@ ferdig_long.endring %>%
             axis.text.y = element_text(face = "italic", size = 12))
     # Sett inn bedre indikasjon av artsgruppe etterhvert
   }
-  
+
 
