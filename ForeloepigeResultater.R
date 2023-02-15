@@ -2928,13 +2928,13 @@ ferdig_long.endring %>%
       labs(x = "", y = "") +  # Bruk ev. y="Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)),  hjust=-1, size = 5)  +
       ### Annotation av ekspertgruppe må legges inn manuelt eller kommenteres ut!
-      annotate('segment', x = c(rep(3.45, 7)), xend = c(rep(3.45, 7)),  # Vertikale streker
+      annotate('segment', x = c(rep(3.15, 7)), xend = c(rep(3.15, 7)),  # Vertikale streker
                y = c(1, 2, 3, 4, 6, 13, 16),
                yend = c(1, 2, 3, 5, 12, 15, 16)) +
-      annotate('segment', x = c(rep(3.25, 14)), xend = c(rep(3.45, 14)) , # Horisontale streker
+      annotate('segment', x = c(rep(3, 14)), xend = c(rep(3.15, 14)) , # Horisontale streker
                y = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16),
                yend = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16)  ) +
-      annotate("text", x = c(rep(3.75, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+      annotate("text", x = c(rep(3.4, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),  # Ekspertkomitenavn
                label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=4) +
       #scale_fill_brewer(palette = 'Blues') +
       scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
