@@ -266,10 +266,40 @@ ferdig_long.endring %>%
   group_by(VitenskapeligNavn) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
-    ggplot(., aes(x = antallAarsaker)) +
-      geom_bar(color = 'black', fill = '#e5b445') +
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring %>%
+  filter(Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+               `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
@@ -828,10 +858,11 @@ ferdig_long.endring %>%
   group_by(VitenskapeligNavn) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
-    ggplot(., aes(x = antallAarsaker)) +
-      geom_bar(color = 'black', fill = '#e5b445') +
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
@@ -839,6 +870,37 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring %>%
+  filter(Ekspertkomite == 'Karplanter',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+
 
 ##---         2.2.4 Endring i kategori  ---####
 {
@@ -1365,6 +1427,34 @@ ferdig_long.endring.treslag %>%
             axis.text.x = element_text(size = 12))
   }
 
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring.treslag %>%
+  filter(Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 ##---         2.3.4 Endring i kategori  ---####
 {
@@ -1850,10 +1940,11 @@ ferdig_long.endring %>%
   group_by(VitenskapeligNavn) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
-    ggplot(., aes(x = antallAarsaker)) +
-      geom_bar(color = 'black', fill = '#e5b445') +
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
@@ -1862,6 +1953,35 @@ ferdig_long.endring %>%
             axis.text.x = element_text(size = 12))
   }
 
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == 'Doerstokkart',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 ##---         2.4.4 Endring i kategori  ---####
 {
@@ -2217,10 +2337,11 @@ ferdig_long.endring %>%
   group_by(VitenskapeligNavn) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
-    ggplot(., aes(x = antallAarsaker)) +
-      geom_bar(color = 'black', fill = '#e5b445') +
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
@@ -2229,6 +2350,36 @@ ferdig_long.endring %>%
             axis.text.x = element_text(size = 12))
   }
 
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
 
 ##---         2.5.4 Endring i kategori  ---####
 {
@@ -2533,10 +2684,41 @@ ferdig_long.endring %>%
   group_by(VitenskapeligNavn) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
-    ggplot(., aes(x = antallAarsaker)) +
-      geom_bar(color = 'black', fill = '#e5b445') +
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring %>%
+  filter(Marint == "True" & Terrestrisk == "False",
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
