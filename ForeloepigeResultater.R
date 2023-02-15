@@ -123,17 +123,17 @@ ferdig %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent \nrisiko\nNK",
-                   "LO" = "Lav \nrisiko\nLO",
-                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
-                   "HI" = "H\U00F8y \nrisiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
+          "NK" = "Ingen kjent \nrisiko\nNK",
+          "LO" = "Lav \nrisiko\nLO",
+          "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+          "HI" = "H\U00F8y \nrisiko\nHI",
+          "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
-                                   "NK"="#a6ad59",
-                                   "LO"="#60a5a3",
-                                   "PH"="#1b586c",
-                                   "HI"="#233368",
-                                   "SE"="#602d5e")) + 
+        "NK"="#a6ad59",
+        "LO"="#60a5a3",
+        "PH"="#1b586c",
+        "HI"="#233368",
+        "SE"="#602d5e")) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
@@ -224,35 +224,35 @@ ggsave('alleArter/etableringsklasse_kake.png', bg='transparent')
 ferdig_long.endring %>%
   filter(Aarsak_norsk != "",) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
-      ggplot(.,
-             aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
-        geom_bar(color = 'black') +
-        labs(x = "", y = "") +
-        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
-        scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
-                                     "Endret status"="#5FB7B1",
-                                     "Endret tolkning av retningslinjer"="#71B581",
-                                     #"Ny kunnskap"="#A0BA5B",
-                                     "Ny tolkning av data"="#d2c160",
-                                     "Reell endring"="#e5b445")) +
-        scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                    "Endret status"="Endret status",
-                                    "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                    #"Ny kunnskap"="Ny kunnskap",
-                                    "Ny tolkning av data"="Ny tolkning av data",
-                                    "Reell endring"="Reell endring")) +
-        theme_minimal() +
-        theme(legend.position="none",
-              panel.background = element_rect(fill='transparent', color = NA),
-              plot.background = element_rect(fill='transparent', color=NA),
-              panel.grid = element_blank(),
-              axis.text.y = element_blank(),
-              axis.ticks.y = element_blank(),
-              axis.line.y = element_blank(),
-              axis.line.x = element_blank(),
-              axis.ticks.x = element_blank(),
-              axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
-    }
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   #"Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+  }
 ggsave('alleArter/aarsakEndring.png', bg='transparent')
 
 
@@ -260,52 +260,52 @@ ggsave('alleArter/aarsakEndring.png', bg='transparent')
 
 # Versjon med kategorier skrevet helt ut:
 {
-ferdig %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2018 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
-                                   Kategori2023 == "LO" ~ "Lav risiko (LO)",
-                                   Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
-                                   Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
-                                   Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "Ikke risikovurdert (NR)",
-                                        "Ingen kjent risiko (NK)",
-                                        "Lav risiko (LO)",
-                                        "Potensielt h\U00F8y risiko (PH)",
-                                        "H\U00F8y risiko (HI)",
-                                        "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
-                  ggplot(., aes(x = x, 
-                                next_x = next_x, 
-                                node = node, 
-                                next_node = next_node,
-                                label = node,
-                                fill = node )) +
-                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                    scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                 "Ikke risikovurdert (NR)"="gray90",
-                                                 "Ingen kjent risiko (NK)"="#a6ad59",
-                                                 "Lav risiko (LO)"="#60a5a3",
-                                                 "Potensielt h\U00F8y risiko (PH)"="#1b586c",
-                                                 "H\U00F8y risiko (HI)"="#233368",
-                                                 "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
-                                      name = "") +
-                    labs(x = "") +
-                    theme_sankey(base_size = 16) +
-                    theme(legend.position="none",
-                          panel.background = element_rect(fill='transparent', color = NA),
-                          plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "Ingen kjent risiko (NK)",
+                                     Kategori2018 == "LO" ~ "Lav risiko (LO)",
+                                     Kategori2018 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
+                                     Kategori2018 == "HI" ~ "H\U00F8y risiko (HI)",
+                                     Kategori2018 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert (NR)",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "Ingen kjent risiko (NK)",
+                                     Kategori2023 == "LO" ~ "Lav risiko (LO)",
+                                     Kategori2023 == "PH" ~ "Potensielt h\U00F8y risiko (PH)",
+                                     Kategori2023 == "HI" ~ "H\U00F8y risiko (HI)",
+                                     Kategori2023 == "SE" ~ "Sv\U00E6rt h\U00F8y risiko (SE)")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "Ikke risikovurdert (NR)",
+                                          "Ingen kjent risiko (NK)",
+                                          "Lav risiko (LO)",
+                                          "Potensielt h\U00F8y risiko (PH)",
+                                          "H\U00F8y risiko (HI)",
+                                          "Sv\U00E6rt h\U00F8y risiko (SE)")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "Ikke risikovurdert (NR)"="gray90",
+                                                                           "Ingen kjent risiko (NK)"="#a6ad59",
+                                                                           "Lav risiko (LO)"="#60a5a3",
+                                                                           "Potensielt h\U00F8y risiko (PH)"="#1b586c",
+                                                                           "H\U00F8y risiko (HI)"="#233368",
+                                                                           "Sv\U00E6rt h\U00F8y risiko (SE)"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 
 # Versjon med forkortet kategori
@@ -393,22 +393,22 @@ ggsave('alleArter/endring.png', bg='transparent')
     tally()
   # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
   Sankey2 <- rbind(Sankey2 %>%
-                         filter(is.na(next_node)) %>%
-                         mutate(n2 = n,
-                                x = 'Kategori 2023',
-                                next_x = NA)  %>%
-                         relocate(x, node, next_x, next_node, n, n2) %>%
-                         select(-next_node),
-                       
-                       Sankey2 %>%
-                         filter(!is.na(next_node)) %>%
-                         group_by(node) %>%
-                         summarise(n2 = sum(n)) %>%
-                         mutate(next_node = 'x', n = NA,
-                                x = 'Kategori 2018',
-                                next_x = 'Kategori 2023') %>%
-                         relocate(x, node, next_x, next_node, n, n2)%>%
-                         select(-next_node) )
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
   
   ### Step 3
   Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
@@ -418,11 +418,11 @@ ggsave('alleArter/endring.png', bg='transparent')
   
   # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
   ggplot(Sankey3, aes(x = x, 
-                          next_x = next_x, 
-                          node = node, 
-                          next_node = next_node,
-                          fill = node,
-                          label = paste0(node,",\nn=", n2) )) +
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(rep(.78,965),    # Ikke risikovurdert tidligere
                                 rep(2.1,192),  # NR
@@ -451,51 +451,51 @@ ggsave('alleArter/endring_verdier.png', bg='transparent')
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
-ferdig %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
 
@@ -565,13 +565,13 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(#rep(.78,965),    # Ikke risikovurdert tidligere
-                                rep(2.1,26),  # NR
-                                rep(.78,440), rep(2.1,162),   # NK
-                                rep(.78,726), rep(2.1,782),  # LO
-                                rep(.78,104), rep(2.1,231),  # PH
-                                rep(.78,104), rep(2.1,135),  # HI
-                                rep(.78,131), rep(2.1,169))),  # SE)),
-                      size = 3.5, color = 1, fill = "white") +
+      rep(2.1,26),  # NR
+      rep(.78,440), rep(2.1,162),   # NK
+      rep(.78,726), rep(2.1,782),  # LO
+      rep(.78,104), rep(2.1,231),  # PH
+      rep(.78,104), rep(2.1,135),  # HI
+      rep(.78,131), rep(2.1,169))),  # SE)),
+      size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -662,11 +662,11 @@ ferdig %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent \nrisiko\nNK",
-                   "LO" = "Lav \nrisiko\nLO",
-                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
-                   "HI" = "H\U00F8y \nrisiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
+          "NK" = "Ingen kjent \nrisiko\nNK",
+          "LO" = "Lav \nrisiko\nLO",
+          "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+          "HI" = "H\U00F8y \nrisiko\nHI",
+          "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
         "NK"="#a6ad59",
         "LO"="#60a5a3",
@@ -762,87 +762,87 @@ ferdig_long.endring %>%
   filter(Ekspertkomite == "Karplanter",
          Aarsak_norsk != "",) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
-      ggplot(.,
-             aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
-        geom_bar(color = 'black') +
-        labs(x = "", y = "") +
-        geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
-        scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
-                                     "Endret status"="#5FB7B1",
-                                     "Endret tolkning av retningslinjer"="#71B581",
-                                     #"Ny kunnskap"="#A0BA5B",
-                                     "Ny tolkning av data"="#d2c160",
-                                     "Reell endring"="#e5b445")) +
-        scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                    "Endret status"="Endret status",
-                                    "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                    #"Ny kunnskap"="Ny kunnskap",
-                                    "Ny tolkning av data"="Ny tolkning av data",
-                                    "Reell endring"="Reell endring")) +
-        theme_minimal() +
-        theme(legend.position="none",
-              panel.background = element_rect(fill='transparent', color = NA),
-              plot.background = element_rect(fill='transparent', color=NA),
-              panel.grid = element_blank(),
-              axis.text.y = element_blank(),
-              axis.ticks.y = element_blank(),
-              axis.line.y = element_blank(),
-              axis.line.x = element_blank(),
-              axis.ticks.x = element_blank(),
-              axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
-    }
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   #"Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
+  }
 ggsave('karplanter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.2.4 Endring i kategori  ---####
 {
-ferdig %>%
-  filter( Ekspertkomite =="Karplanter") %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    filter( Ekspertkomite =="Karplanter") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('karplanter/endring.png', bg='transparent')
 
@@ -939,52 +939,52 @@ ggsave('karplanter/endring_verdier.png', bg='transparent')
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
-ferdig %>%
-  filter( Ekspertkomite =="Karplanter") %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    filter( Ekspertkomite =="Karplanter") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
 
@@ -1055,13 +1055,13 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(#rep(.78,289),    # Ikke risikovurdert tidligere
-                                rep(2.1,13),  # NR
-                                rep(.78,358), rep(2.1,124),   # NK
-                                rep(.78,413), rep(2.1,466),  # LO
-                                rep(.78,46), rep(2.1,163),  # PH
-                                rep(.78,52),rep(2.1,80),  # HI
-                                rep(.78,72), rep(2.1,95))),  # SE)),
-                      size = 3.5, color = 1, fill = "white") +
+      rep(2.1,13),  # NR
+      rep(.78,358), rep(2.1,124),   # NK
+      rep(.78,413), rep(2.1,466),  # LO
+      rep(.78,46), rep(2.1,163),  # PH
+      rep(.78,52),rep(2.1,80),  # HI
+      rep(.78,72), rep(2.1,95))),  # SE)),
+      size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -1167,17 +1167,17 @@ ferdig_treslag %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen kjent \nrisiko\nNK",
-                   "LO" = "Lav \nrisiko\nLO",
-                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
-                   "HI" = "H\U00F8y \nrisiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
+          "NK" = "Ingen kjent \nrisiko\nNK",
+          "LO" = "Lav \nrisiko\nLO",
+          "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+          "HI" = "H\U00F8y \nrisiko\nHI",
+          "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c(#"NR"="white",
-                                   "NK"="#a6ad59",
-                                   "LO"="#60a5a3",
-                                   "PH"="#1b586c",
-                                   "HI"="#233368",
-                                   "SE"="#602d5e")) + 
+        "NK"="#a6ad59",
+        "LO"="#60a5a3",
+        "PH"="#1b586c",
+        "HI"="#233368",
+        "SE"="#602d5e")) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
@@ -1299,102 +1299,102 @@ ggsave('treslag/aarsakEndring.png', bg='transparent')
 
 ##---         2.3.4 Endring i kategori  ---####
 {
-ferdig_treslag %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig_treslag %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('treslag/endring.png', bg='transparent')
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
-ferdig_treslag %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig_treslag %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('treslag/endring_reviderteArter.png', bg='transparent')
 
@@ -1485,7 +1485,7 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
           plot.background = element_rect(fill='transparent', color=NA))
   
   rm(Sankey1_tre, Sankey2_tre, Sankey3_tre)
-  }
+}
 ggsave('treslag/endring_verdier.png', bg='transparent')
 
 # Bare reviderte arter
@@ -1640,7 +1640,7 @@ ggsave('treslag/endring_matrise.png', bg='transparent')
 #---         2.4.1 Risikokategori  ---####
 ferdig %>%
   filter(Fremmedartsstatus == "Doerstokkart",
-  Kategori2023 != 'NR') %>%
+         Kategori2023 != 'NR') %>%
   {
     ggplot(.,
            aes(x = Kategori2023, fill = Kategori2023)) +
@@ -1649,11 +1649,11 @@ ferdig %>%
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
-                   "NK" = "Ingen \nkjent risiko\nNK",
-                   "LO" = "Lav \nrisiko\nLO",
-                   "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
-                   "HI" = "H\U00F8y \nrisiko\nHI",
-                   "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
+          "NK" = "Ingen \nkjent risiko\nNK",
+          "LO" = "Lav \nrisiko\nLO",
+          "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+          "HI" = "H\U00F8y \nrisiko\nHI",
+          "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
       theme_minimal() +
@@ -1738,87 +1738,87 @@ ferdig_long.endring %>%
   filter(Fremmedartsstatus == "Doerstokkart",
          Aarsak_norsk != "",) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
-           ggplot(.,
-                  aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
-             geom_bar(color = 'black') +
-             labs(x = "", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
-             scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
-                                          "Endret status"="#5FB7B1",
-                                          "Endret tolkning av retningslinjer"="#71B581",
-                                          "Ny kunnskap"="#A0BA5B",
-                                          "Ny tolkning av data"="#d2c160",
-                                          "Reell endring"="#e5b445")) +
-             scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                         "Endret status"="Endret status",
-                                         "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                         "Ny kunnskap"="Ny kunnskap",
-                                         "Ny tolkning av data"="Ny tolkning av data",
-                                         "Reell endring"="Reell endring")) +
-             theme_minimal() +
-             theme(legend.position="none",
-                   panel.background = element_rect(fill='transparent', color = NA),
-                   plot.background = element_rect(fill='transparent', color=NA),
-                   panel.grid = element_blank(),
-                   axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank(),
-                   axis.line.y = element_blank(),
-                   axis.line.x = element_blank(),
-                   axis.ticks.x = element_blank(),
-                   axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
-         }
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   "Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  "Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+  }
 ggsave('doerstokkarter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.4.4 Endring i kategori  ---####
 {
-ferdig %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  filter( Fremmedartsstatus == "Doerstokkart") %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                  ggplot(., aes(x = x, 
-                                next_x = next_x, 
-                                node = node, 
-                                next_node = next_node,
-                                fill = node,
-                                label = node)) +
-                    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                    geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                    scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                 "NR"="gray90",
-                                                 "NK"="#a6ad59",
-                                                 "LO"="#60a5a3",
-                                                 "PH"="#1b586c",
-                                                 "HI"="#233368",
-                                                 "SE"="#602d5e"),
-                                      name = "") +
-                    labs(x = "") +
-                    theme_sankey(base_size = 16) +
-                    theme(legend.position="none",
-                          panel.background = element_rect(fill='transparent', color = NA),
-                          plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    filter( Fremmedartsstatus == "Doerstokkart") %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          fill = node,
+                                                          label = node)) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('doerstokkarter/endring.png', bg='transparent')
 
@@ -2080,87 +2080,87 @@ ferdig_long.endring %>%
          Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere',
          Aarsak_norsk != "",) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
-           ggplot(.,
-                  aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
-             geom_bar(color = 'black') +
-             labs(x = "", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
-             scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
-                                          "Endret status"="#5FB7B1",
-                                          "Endret tolkning av retningslinjer"="#71B581",
-                                          "Ny kunnskap"="#A0BA5B",
-                                          "Ny tolkning av data"="#d2c160",
-                                          "Reell endring"="#e5b445")) +
-             scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                         "Endret status"="Endret status",
-                                         "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                         "Ny kunnskap"="Ny kunnskap",
-                                         "Ny tolkning av data"="Ny tolkning av data",
-                                         "Reell endring"="Reell endring")) +
-             theme_minimal() +
-             theme(legend.position="none",
-                   panel.background = element_rect(fill='transparent', color = NA),
-                   plot.background = element_rect(fill='transparent', color=NA),
-                   panel.grid = element_blank(),
-                   axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank(),
-                   axis.line.y = element_blank(),
-                   axis.line.x = element_blank(),
-                   axis.ticks.x = element_blank(),
-                   axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
-         }
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   "Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  "Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+  }
 ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring.png', bg='transparent')
 
 ##---         2.5.4 Endring i kategori  ---####
 {
-ferdig %>%
-  filter( Fremmedartsstatus == "Doerstokkart",
-          Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        fill = node,
-                                                        label = node)) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    filter( Fremmedartsstatus == "Doerstokkart",
+            Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          fill = node,
+                                                          label = node)) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
 
@@ -2200,22 +2200,22 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
     tally()
   # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
   Sankey2 <- rbind(Sankey2 %>%
-                         filter(is.na(next_node)) %>%
-                         mutate(n2 = n,
-                                x = 'Kategori 2023',
-                                next_x = NA)  %>%
-                         relocate(x, node, next_x, next_node, n, n2) %>%
-                         select(-next_node),
-                       
-                       Sankey2 %>%
-                         filter(!is.na(next_node)) %>%
-                         group_by(node) %>%
-                         summarise(n2 = sum(n)) %>%
-                         mutate(next_node = 'x', n = NA,
-                                x = 'Kategori 2018',
-                                next_x = 'Kategori 2023') %>%
-                         relocate(x, node, next_x, next_node, n, n2)%>%
-                         select(-next_node) )
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
   
   ### Step 3
   Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
@@ -2371,87 +2371,87 @@ ferdig_long.endring %>%
   filter(Marint == "True" & Terrestrisk == "False",
          Aarsak_norsk != "",) %>% 
   distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
-           ggplot(.,
-                  aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
-             geom_bar(color = 'black') +
-             labs(x = "", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
-             scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
-                                          "Endret status"="#5FB7B1",
-                                          "Endret tolkning av retningslinjer"="#71B581",
-                                          #"Ny kunnskap"="#A0BA5B",
-                                          "Ny tolkning av data"="#d2c160",
-                                          "Reell endring"="#e5b445")) +
-             scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                         "Endret status"="Endret status",
-                                         "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                         #"Ny kunnskap"="Ny kunnskap",
-                                         "Ny tolkning av data"="Ny tolkning av data",
-                                         "Reell endring"="Reell endring")) +
-             theme_minimal() +
-             theme(legend.position="none",
-                   panel.background = element_rect(fill='transparent', color = NA),
-                   plot.background = element_rect(fill='transparent', color=NA),
-                   panel.grid = element_blank(),
-                   axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank(),
-                   axis.line.y = element_blank(),
-                   axis.line.x = element_blank(),
-                   axis.ticks.x = element_blank(),
-                   axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
-         }
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   #"Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
+  }
 ggsave('marineArter/aarsakEndring.png', bg='transparent')
 
 
 ##---         2.6.4 Endring i kategori  ---####
 {
-ferdig %>%
-  filter(Marint == "True" & Terrestrisk == "False") %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
-                                        "NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
-                                                                         "NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    filter(Marint == "True" & Terrestrisk == "False") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('marineArter/endring.png', bg='transparent')
 
@@ -2549,52 +2549,52 @@ ggsave('marineArter/endring_verdier.png', bg='transparent')
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
-ferdig %>%
-  filter(Marint == "True" & Terrestrisk == "False") %>%
-  mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
-                                   Kategori2018 == "NK" ~ "NK",
-                                   Kategori2018 == "LO" ~ "LO",
-                                   Kategori2018 == "PH" ~ "PH",
-                                   Kategori2018 == "HI" ~ "HI",
-                                   Kategori2018 == "SE" ~ "SE"),
-         Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
-                                   Kategori2023 == "NK" ~ "NK",
-                                   Kategori2023 == "LO" ~ "LO",
-                                   Kategori2023 == "PH" ~ "PH",
-                                   Kategori2023 == "HI" ~ "HI",
-                                   Kategori2023 == "SE" ~ "SE")) %>%
-  filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
-  rename('Kategori 2018' = 'Kategori2018' ,
-         'Kategori 2023' = 'Kategori2023' ) %>%
-  make_long(`Kategori 2018`, `Kategori 2023`) %>%
-  mutate(across(c(node, next_node),
-                ~ordered(.x, levels = c("NR",
-                                        "NK",
-                                        "LO",
-                                        "PH",
-                                        "HI",
-                                        "SE")))) %>% {
-                                          ggplot(., aes(x = x, 
-                                                        next_x = next_x, 
-                                                        node = node, 
-                                                        next_node = next_node,
-                                                        label = node,
-                                                        fill = node )) +
-                                            geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                            geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                            scale_fill_manual(values = c("NR"="gray90",
-                                                                         "NK"="#a6ad59",
-                                                                         "LO"="#60a5a3",
-                                                                         "PH"="#1b586c",
-                                                                         "HI"="#233368",
-                                                                         "SE"="#602d5e"),
-                                                              name = "") +
-                                            labs(x = "") +
-                                            theme_sankey(base_size = 16) +
-                                            theme(legend.position="none",
-                                                  panel.background = element_rect(fill='transparent', color = NA),
-                                                  plot.background = element_rect(fill='transparent', color=NA))
-                                        }
+  ferdig %>%
+    filter(Marint == "True" & Terrestrisk == "False") %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    filter(Kategori2018 != 'Ikke risikovurdert tidligere') %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          label = node,
+                                                          fill = node )) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
 }
 ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
 
@@ -2665,13 +2665,13 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(#rep(.78,116),    # Ikke risikovurdert tidligere
-                                rep(2.1,4),  # NR
-                                rep(.78,7), #rep(2.1,6),   # NK
-                                rep(.78,53), rep(2.1,54),  # LO
-                                rep(.78,20), rep(2.1,14),  # PH
-                                rep(.78,18),rep(2.1,21),  # HI
-                                rep(.78,23), rep(2.1,28))),  # SE)),
-                      size = 3.5, color = 1, fill = "white") +
+      rep(2.1,4),  # NR
+      rep(.78,7), #rep(2.1,6),   # NK
+      rep(.78,53), rep(2.1,54),  # LO
+      rep(.78,20), rep(2.1,14),  # PH
+      rep(.78,18),rep(2.1,21),  # HI
+      rep(.78,23), rep(2.1,28))),  # SE)),
+      size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -2765,9 +2765,9 @@ trinn3 %>%
          Kategori2018, Kriterier2018, Kategori2023, Kriterier2023,
          AarsakTilEndringIKategori, AarsakTilEndringIKategoriBeskrivelse, SistEndretAv) %>%
   write.csv2('storeEndringer.csv') #%>%
-  #View()
+#View()
 
-### EKSPERTKOMITE
+##---     3.1 Plot ekspertkomite  ---####
 ggplot(trinn3,
        aes(x = Ekspertkomite)) +
   geom_bar(color = 'black', fill='gray70') +
@@ -2782,42 +2782,42 @@ ggplot(trinn3,
         axis.ticks.y = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = .8, size = 12))
 
-### AARSAK TIL ENDRING
+##---     3.2 Plot Årsak til endring  ---####
 # OBS summen av barene her er ikke antallet av arter; de kan ha hatt mer en én endringskategori
 ferdig_long.endring %>%
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
          Aarsak_norsk != "",) %>%
   distinct(VitenskapeligNavn, Aarsak_norsk) %>%  # "Reel endring' har innimellom to rader om det var både "Ny kunnskap" og "Reell endring" i rådata
   {
-           ggplot(.,
-                  aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
-             geom_bar(color = 'black') +
-             labs(x = "", y = "") +
-             geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
-             scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
-                                          "Endret status"="#5FB7B1",
-                                          "Endret tolkning av retningslinjer"="#71B581",
-                                          #"Ny kunnskap"="#A0BA5B",
-                                          "Ny tolkning av data"="#d2c160",
-                                          "Reell endring"="#e5b445")) +
-             scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                         "Endret status"="Endret status",
-                                         "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                         #"Ny kunnskap"="Ny kunnskap",
-                                         "Ny tolkning av data"="Ny tolkning av data",
-                                         "Reell endring"="Reell endring")) +
-             theme_minimal() +
-             theme(legend.position="none",
-                   panel.background = element_rect(fill='transparent', color = NA),
-                   plot.background = element_rect(fill='transparent', color=NA),
-                   panel.grid = element_blank(),
-                   axis.text.y = element_blank(),
-                   axis.ticks.y = element_blank(),
-                   axis.line.y = element_blank(),
-                   axis.line.x = element_blank(),
-                   axis.ticks.x = element_blank(),
-                   axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
-         }
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   #"Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
+  }
 
 # Årsaker for hver art
 ferdig_long.endring %>%
@@ -2855,7 +2855,7 @@ ferdig_long.endring %>%
         axis.ticks.x = element_blank(),
         axis.text.x = element_text(angle = 90, hjust = .9, size = 12)) 
 
-# Matrise plot
+##---     3.3 Plot Årsak til endring, matrise-plot  ---####
 ferdig_long.endring %>%
   filter(!Kategori2018 == 'Ikke risikovurdert tidligere') %>%  
   filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
@@ -2875,38 +2875,79 @@ ferdig_long.endring %>%
   mutate(Ekspertkomite = factor(Ekspertkomite)) %>%
   arrange(Ekspertkomite) %>%
   mutate(VitenskapeligNavn = factor(VitenskapeligNavn, levels = unique(VitenskapeligNavn))) %>%  # Må inkluderes for å ordne de i rekkefølge basert på komite frem for alfabetisk
-{
-ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
-  geom_tile(aes(fill = farge), color = 'gray40') +
-    # Annotation a vekspertgruppe må legges inn manuelt eller kommenteres ut!
-    annotate('segment', x = c(rep(4.6, 7)), xend = c(rep(4.6, 7)),
-             y = c(1, 2, 3, 4, 6, 13, 16),
-             yend = c(1, 2, 3, 5, 12, 15, 16)) +
-    annotate("text", x = c(rep(4.85, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),
-             label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=3.5) +
-    coord_cartesian(clip = "off") +  # Tillat tekst i hele margin
-    
-  scale_fill_manual(values = c('Reell endring' = '#e5b445',
-                               'Endret tolkning av retningslinjer' = '#71B581',
-                               'Ny tolkning av data' = '#d2c160',
-                               'Endrede avgrensninger/retningslinjer' = '#35a3b2',
-                               'Endret status' = '#5FB7B1'), na.value = 'white') +  labs(x = '', y = '') +
-  scale_x_discrete(position = "top",
-                   labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                              "Endret status"="Endret \nstatus",
-                              "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
-                              #"Ny kunnskap"="Ny kunnskap",
-                              "Ny tolkning av data"="Ny tolkning \nav data",
-                              "Reell endring"="Reell \nendring"), ) +
-    scale_y_discrete(limits = rev) +
-  theme(legend.position = 'none',
-        panel.background = element_rect(fill='transparent', color = NA),
-        plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.y = element_text(face = "italic"),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.margin = unit(c(.5,5,.5,1), "lines") # Øk margin 
-        )
-}
+  {
+    ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
+      geom_tile(aes(fill = farge), color = 'gray40') +
+      ### Annotation a vekspertgruppe må legges inn manuelt eller kommenteres ut!
+      annotate('segment', x = c(rep(4.6, 7)), xend = c(rep(4.6, 7)),  # Vertikale streker
+               y = c(1, 2, 3, 4, 6, 13, 16),
+               yend = c(1, 2, 3, 5, 12, 15, 16)) +
+      annotate('segment', x = c(rep(4.55, 14)), xend = c(rep(4.6, 14)) , # Horisontale streker
+               y = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16),
+               yend = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16)  ) +
+      annotate("text", x = c(rep(4.85, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+               label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=3.5) +
+      coord_cartesian(clip = "off") +  # Tillat tekst i hele margin
+      ###
+      scale_fill_manual(values = c('Reell endring' = '#e5b445',
+                                   'Endret tolkning av retningslinjer' = '#71B581',
+                                   'Ny tolkning av data' = '#d2c160',
+                                   'Endrede avgrensninger/retningslinjer' = '#35a3b2',
+                                   'Endret status' = '#5FB7B1'), na.value = 'white') +  labs(x = '', y = '') +
+      scale_x_discrete(position = "top",
+                       labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring"), ) +
+      scale_y_discrete(limits = rev) +
+      theme(legend.position = 'none',
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            axis.text.y = element_text(face = "italic"),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            plot.margin = unit(c(.5,5,.5,1), "lines") # Øk margin 
+      )
+  }
 
-## FINN MÅTE Å SORTERE BASERT PÅ EKSPERTKOMITE
+
+##---     3.4 Plot antall årsaker til endring ---####
+ferdig_long.endring %>%
+  filter(VitenskapeligNavn %in% trinn3$VitenskapeligNavn ,
+         Aarsak_norsk != "",) %>%
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>% 
+  left_join(ferdig[,c("VitenskapeligNavn","Ekspertkomite")]) %>%
+  mutate(Ekspertkomite = factor(Ekspertkomite)) %>%
+  arrange(Ekspertkomite) %>%
+  mutate(VitenskapeligNavn = factor(VitenskapeligNavn, levels = unique(VitenskapeligNavn))) %>%  # Må inkluderes for å ordne de i rekkefølge basert på komite frem for alfabetisk
+  {
+    ggplot(., aes(y = VitenskapeligNavn,fill = Ekspertkomite)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +  # Bruk ev. y="Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)),  hjust=-1, size = 5)  +
+      ### Annotation av ekspertgruppe må legges inn manuelt eller kommenteres ut!
+      annotate('segment', x = c(rep(3.45, 7)), xend = c(rep(3.45, 7)),  # Vertikale streker
+               y = c(1, 2, 3, 4, 6, 13, 16),
+               yend = c(1, 2, 3, 5, 12, 15, 16)) +
+      annotate('segment', x = c(rep(3.25, 14)), xend = c(rep(3.45, 14)) , # Horisontale streker
+               y = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16),
+               yend = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16)  ) +
+      annotate("text", x = c(rep(3.75, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+               label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=4) +
+      #scale_fill_brewer(palette = 'Blues') +
+      scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
+      scale_y_discrete(limits = rev) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            plot.margin = unit(c(.5,3,.5,1), "lines"),
+            panel.grid = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_text(face = "italic", size = 12))
+    # Sett inn bedre indikasjon av artsgruppe etterhvert
+  }
+  
+
