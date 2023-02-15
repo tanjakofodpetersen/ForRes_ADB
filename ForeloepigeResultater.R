@@ -2874,31 +2874,39 @@ ferdig_long.endring %>%
   left_join(ferdig[,c("VitenskapeligNavn","Ekspertkomite")]) %>%
   mutate(Ekspertkomite = factor(Ekspertkomite)) %>%
   arrange(Ekspertkomite) %>%
+  mutate(VitenskapeligNavn = factor(VitenskapeligNavn, levels = unique(VitenskapeligNavn))) %>%  # Må inkluderes for å ordne de i rekkefølge basert på komite frem for alfabetisk
 {
 ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
   geom_tile(aes(fill = farge), color = 'gray40') +
-  #geom_tile(aes(fill = as.character(n))) +
-  #geom_text(aes(label = n), size = 6) +
+    # Annotation a vekspertgruppe må legges inn manuelt eller kommenteres ut!
+    annotate('segment', x = c(rep(4.6, 7)), xend = c(rep(4.6, 7)),
+             y = c(1, 2, 3, 4, 6, 13, 16),
+             yend = c(1, 2, 3, 5, 12, 15, 16)) +
+    annotate("text", x = c(rep(4.85, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),
+             label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=3.5) +
+    coord_cartesian(clip = "off") +  # Tillat tekst i hele margin
+    
   scale_fill_manual(values = c('Reell endring' = '#e5b445',
                                'Endret tolkning av retningslinjer' = '#71B581',
                                'Ny tolkning av data' = '#d2c160',
                                'Endrede avgrensninger/retningslinjer' = '#35a3b2',
                                'Endret status' = '#5FB7B1'), na.value = 'white') +  labs(x = '', y = '') +
-  scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                              "Endret status"="Endret status",
-                              "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+  scale_x_discrete(position = "top",
+                   labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                              "Endret status"="Endret \nstatus",
+                              "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
                               #"Ny kunnskap"="Ny kunnskap",
-                              "Ny tolkning av data"="Ny tolkning av data",
-                              "Reell endring"="Reell endring")) +
+                              "Ny tolkning av data"="Ny tolkning \nav data",
+                              "Reell endring"="Reell \nendring"), ) +
+    scale_y_discrete(limits = rev) +
   theme(legend.position = 'none',
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
-        #axis.ticks = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = .9),
-        #axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =12),
-        #axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        axis.text.y = element_text(face = "italic"),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank(),
+        plot.margin = unit(c(.5,5,.5,1), "lines") # Øk margin 
+        )
 }
 
 ## FINN MÅTE Å SORTERE BASERT PÅ EKSPERTKOMITE
