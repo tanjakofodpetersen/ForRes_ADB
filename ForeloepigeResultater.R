@@ -8,7 +8,7 @@ library(data.table)
 library(ggsankey)
 
 getwd()
-setwd("C:/Users/TKP/OneDrive - artsdatabanken.no/Dokumenter/ForRes_ADB/20230208")
+setwd("C:/Users/TKP/OneDrive - artsdatabanken.no/Dokumenter/ForRes_ADB/20230216")
 
 # Les eksportfilen fra mappe; oppdater til nyeste filen
 ### OBS! Rett æ, ø og å før filen leses
@@ -278,6 +278,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('alleArter/aarsakEndring_antallTrinn.png', bg='transparent')
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -307,6 +308,8 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+
 
 ##---         2.1.4 Endring i kategori  ---####
 
@@ -476,13 +479,13 @@ ggsave('alleArter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,965),    # Ikke risikovurdert tidligere
-                                rep(2.1,192),  # NR
-                                rep(.78,440), rep(2.1,332),   # NK
-                                rep(.78,726), rep(2.1,1159),  # LO
-                                rep(.78,104), rep(2.1,366),  # PH
-                                rep(.78,104),rep(2.1,196),  # HI
-                                rep(.78,131), rep(2.1,225))),  # SE)),
+    geom_sankey_label(aes(x = c(rep(.78,987),    # Ikke risikovurdert tidligere
+                                rep(2.1,201),  # NR
+                                rep(.78,443), rep(2.1,334),   # NK
+                                rep(.78,736), rep(2.1,1171),  # LO
+                                rep(.78,103), rep(2.1,373),  # PH
+                                rep(.78,108),rep(2.1,202),  # HI
+                                rep(.78,132), rep(2.1,228))),  # SE)),
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -617,12 +620,12 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(#rep(.78,965),    # Ikke risikovurdert tidligere
-      rep(2.1,26),  # NR
-      rep(.78,440), rep(2.1,162),   # NK
-      rep(.78,726), rep(2.1,782),  # LO
-      rep(.78,104), rep(2.1,231),  # PH
-      rep(.78,104), rep(2.1,135),  # HI
-      rep(.78,131), rep(2.1,169))),  # SE)),
+      rep(2.1,27),  # NR
+      rep(.78,443), rep(2.1,162),   # NK
+      rep(.78,736), rep(2.1,786),  # LO
+      rep(.78,103), rep(2.1,236),  # PH
+      rep(.78,108), rep(2.1,139),  # HI
+      rep(.78,132), rep(2.1,172))),  # SE)),
       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -870,6 +873,8 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('karplanter/aarsakEndring_antallTrinn.png', bg='transparent')
+
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -900,7 +905,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
-
+ggsave('karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
 
 ##---         2.2.4 Endring i kategori  ---####
 {
@@ -1020,13 +1025,13 @@ ggsave('karplanter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,289),    # Ikke risikovurdert tidligere
-                                rep(2.1,84),  # NR
-                                rep(.78,358), rep(2.1,198),   # NK
-                                rep(.78,413), rep(2.1,589),  # LO
-                                rep(.78,46), rep(2.1,173),  # PH
-                                rep(.78,52),rep(2.1,85),  # HI
-                                rep(.78,72), rep(2.1,101))),  # SE)),
+    geom_sankey_label(aes(x = c(rep(.78,310),    # Ikke risikovurdert tidligere
+                                rep(2.1,91),  # NR
+                                rep(.78,361), rep(2.1,202),   # NK
+                                rep(.78,422), rep(2.1,600),  # LO
+                                rep(.78,46), rep(2.1,179),  # PH
+                                rep(.78,56),rep(2.1,91),  # HI
+                                rep(.78,73), rep(2.1,105))),  # SE)),
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1163,12 +1168,12 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(#rep(.78,289),    # Ikke risikovurdert tidligere
-      rep(2.1,13),  # NR
-      rep(.78,358), rep(2.1,124),   # NK
-      rep(.78,413), rep(2.1,466),  # LO
-      rep(.78,46), rep(2.1,163),  # PH
-      rep(.78,52),rep(2.1,80),  # HI
-      rep(.78,72), rep(2.1,95))),  # SE)),
+      rep(2.1,14),  # NR
+      rep(.78,361), rep(2.1,124),   # NK
+      rep(.78,422), rep(2.1,470),  # LO
+      rep(.78,46), rep(2.1,167),  # PH
+      rep(.78,56),rep(2.1,84),  # HI
+      rep(.78,73), rep(2.1,99))),  # SE)),
       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1407,7 +1412,7 @@ ggsave('treslag/aarsakEndring.png', bg='transparent')
 
 ##---             2.3.3.1 Aarsak til endring; oppsummering  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
-ferdig_long.endring.treslag %>%
+ferdig_long.endring_treslag %>%
   filter(Aarsak_norsk != "",
          Kategori2023 != 'NR',  # Ta bort NR-arter
          Kategori2018 != Kategori2023) %>% 
@@ -1415,10 +1420,11 @@ ferdig_long.endring.treslag %>%
   group_by(VitenskapeligNavn) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
-    ggplot(., aes(x = antallAarsaker)) +
-      geom_bar(color = 'black', fill = '#e5b445') +
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
       theme_minimal() +
       theme(legend.position="none",
             panel.grid = element_blank(),
@@ -1426,9 +1432,10 @@ ferdig_long.endring.treslag %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('treslag/aarsakEndring_antallTrinn.png', bg='transparent')
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
-ferdig_long.endring.treslag %>%
+ferdig_long.endring_treslag %>%
   filter(Aarsak_norsk != "",
          Kategori2023 != 'NR',  # Ta bort NR-arter
          Kategori2018 != Kategori2023) %>% 
@@ -1439,7 +1446,7 @@ ferdig_long.endring.treslag %>%
   pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
   filter(`Endret tolkning av retningslinjer` == 1) %>% 
   pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
-                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`), names_to = 'Aarsak_norsk') %>% 
   filter(!is.na(value)) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
@@ -1455,6 +1462,8 @@ ferdig_long.endring.treslag %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('treslag/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+
 
 ##---         2.3.4 Endring i kategori  ---####
 {
@@ -1622,11 +1631,11 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
                           fill = node,
                           label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,25),    # Ikke risikovurdert tidligere
+    geom_sankey_label(aes(x = c(rep(.78,27),    # Ikke risikovurdert tidligere
                                 rep(2.1,13),  # NR
-                                rep(.78,39), rep(2.1,10),   # NK
-                                rep(.78,55), rep(2.1,66),  # LO
-                                rep(.78,4), rep(2.1,20),  # PH
+                                rep(.78,42), rep(2.1,10),   # NK
+                                rep(.78,56), rep(2.1,71),  # LO
+                                rep(.78,4), rep(2.1,21),  # PH
                                 rep(.78,11),rep(2.1,18),  # HI
                                 rep(.78,12), rep(2.1,19))),  # SE)),
                       size = 3.5, color = 1, fill = "white") +
@@ -1713,8 +1722,8 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
                           label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(rep(2.1,1),  # NR
-                                rep(.78,39), rep(2.1,9),   # NK
-                                rep(.78,55), rep(2.1,55),  # LO
+                                rep(.78,42), rep(2.1,9),   # NK
+                                rep(.78,56), rep(2.1,59),  # LO
                                 rep(.78,4), rep(2.1,20),  # PH
                                 rep(.78,11),rep(2.1,18),  # HI
                                 rep(.78,12), rep(2.1,18))),  # SE)),
@@ -1952,6 +1961,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('doerstokkarter/aarsakEndring_antallTrinn.png', bg='transparent')
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -1982,6 +1992,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('doerstokkarter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
 
 ##---         2.4.4 Endring i kategori  ---####
 {
@@ -2101,13 +2112,13 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,687),    # Ikke risikovurdert tidligere
+    geom_sankey_label(aes(x = c(rep(.78,698),    # Ikke risikovurdert tidligere
                                 #rep(2.1,84),  # NR
-                                rep(.78,142), rep(2.1,257),   # NK
-                                rep(.78,154), rep(2.1,528),  # LO
-                                rep(.78,21), rep(2.1,112),  # PH
-                                rep(.78,29),rep(2.1,84),  # HI
-                                rep(.78,23), rep(2.1,75))),  # SE)),
+                                rep(.78,143), rep(2.1,259),   # NK
+                                rep(.78,155), rep(2.1,536),  # LO
+                                rep(.78,20), rep(2.1,113),  # PH
+                                rep(.78,29),rep(2.1,86),  # HI
+                                rep(.78,23), rep(2.1,74))),  # SE)),
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -2184,7 +2195,6 @@ ggplot(cont_DS, aes(x = Kategori2018, y = Kategori2023)) +
         panel.grid.minor = element_blank())
 
 ggsave('doerstokkarter/endring_matrise.png', bg='transparent')
-
 
 
 ##---     2.5 Doerstokkarter fra Horisontskanningen ---####
@@ -2349,6 +2359,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn.png', bg='transparent')
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -2380,6 +2391,8 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+
 
 ##---         2.5.4 Endring i kategori  ---####
 {
@@ -2501,11 +2514,11 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,687),    # Ikke risikovurdert tidligere
-                                rep(2.1,162),   # NK
-                                rep(2.1,331),  # LO
+    geom_sankey_label(aes(x = c(rep(.78,698),    # Ikke risikovurdert tidligere
+                                rep(2.1,164),   # NK
+                                rep(2.1,338),  # LO
                                 rep(2.1,92),  # PH
-                                rep(2.1,55),  # HI
+                                rep(2.1,57),  # HI
                                 rep(2.1,47))),  # SE
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
@@ -2696,6 +2709,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('marineArter/aarsakEndring_antallTrinn.png', bg='transparent')
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -2726,6 +2740,7 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(size = 12))
   }
+ggsave('marineArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
 
 ##---         2.6.4 Endring i kategori  ---####
 {
@@ -2845,10 +2860,10 @@ ggsave('marineArter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,116),    # Ikke risikovurdert tidligere
+    geom_sankey_label(aes(x = c(rep(.78,117),    # Ikke risikovurdert tidligere
                                 rep(2.1,11),  # NR
                                 rep(.78,7), rep(2.1,6),   # NK
-                                rep(.78,53), rep(2.1,113),  # LO
+                                rep(.78,53), rep(2.1,114),  # LO
                                 rep(.78,20), rep(2.1,32),  # PH
                                 rep(.78,18),rep(2.1,29),  # HI
                                 rep(.78,23), rep(2.1,46))),  # SE)),
@@ -3071,7 +3086,6 @@ ggplot(cont_marin, aes(x = Kategori2018, y = Kategori2023)) +
 ggsave('marineArter/endring_matrise.png', bg='transparent')
 
 
-
 ##---------------------------------------------------------------------------------------------------####
 ##---   3. STORE ENDRINGER  ---####
 
@@ -3093,10 +3107,11 @@ trinn3 %>%
 
 ##---     3.1 Plot ekspertkomite  ---####
 ggplot(trinn3,
-       aes(x = Ekspertkomite)) +
-  geom_bar(color = 'black', fill='gray70') +
+       aes(x = Ekspertkomite, fill=Ekspertkomite)) +
+  geom_bar(color = 'black') +
   labs(x = "", y = "") +
   geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 5) +
+  scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
   theme_minimal() +
   theme(legend.position="none",
         panel.background = element_rect(fill='transparent', color = NA),
@@ -3105,6 +3120,7 @@ ggplot(trinn3,
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = .8, size = 12))
+ggsave('Endring3trinn/ekspertkomite.png', bg='transparent')
 
 ##---     3.2 Plot Årsak til endring  ---####
 # OBS summen av barene her er ikke antallet av arter; de kan ha hatt mer en én endringskategori
@@ -3143,6 +3159,8 @@ ferdig_long.endring %>%
             axis.ticks.x = element_blank(),
             axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
   }
+ggsave('Endring3trinn/aarsak.png', bg='transparent')
+
 
 # Årsaker for hver art
 ferdig_long.endring %>%
@@ -3181,6 +3199,9 @@ ferdig_long.endring %>%
         axis.ticks.x = element_blank(),
         axis.text.x = element_text(angle = 90, hjust = .9, size = 12)) 
 
+ggsave('Endring3trinn/aarsakArt.png', bg='transparent')
+
+
 ##---     3.3 Plot Årsak til endring, matrise-plot  ---####
 ferdig_long.endring %>%
   filter(!Kategori2018 == 'Ikke risikovurdert tidligere') %>%  
@@ -3206,13 +3227,13 @@ ferdig_long.endring %>%
     ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
       geom_tile(aes(fill = farge), color = 'gray40') +
       ### Annotation a vekspertgruppe må legges inn manuelt eller kommenteres ut!
-      annotate('segment', x = c(rep(4.6, 7)), xend = c(rep(4.6, 7)),  # Vertikale streker
-               y = c(1, 2, 3, 4, 6, 13, 16),
-               yend = c(1, 2, 3, 5, 12, 15, 16)) +
-      annotate('segment', x = c(rep(4.55, 14)), xend = c(rep(4.6, 14)) , # Horisontale streker
-               y = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16),
-               yend = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16)  ) +
-      annotate("text", x = c(rep(4.85, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+      annotate('segment', x = c(rep(3.6, 7)), xend = c(rep(3.6, 7)),  # Vertikale streker
+               y = c(1, 2, 3, 4, 6, 14, 17),
+               yend = c(1, 2, 3, 5, 13, 16, 17)) +
+      annotate('segment', x = c(rep(3.55, 14)), xend = c(rep(3.6, 14)) , # Horisontale streker
+               y = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17),
+               yend = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17)  ) +
+      annotate("text", x = c(rep(3.85, 7)), y = c(17, 15, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
                label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=3.5) +
       coord_cartesian(clip = "off") +  # Tillat tekst i hele margin
       ###
@@ -3238,6 +3259,7 @@ ferdig_long.endring %>%
             plot.margin = unit(c(.5,5,.5,1), "lines") # Øk margin 
       )
   }
+ggsave('Endring3trinn/aarsakArt_matrise.png', bg='transparent')
 
 
 ##---     3.4 Plot antall årsaker til endring ---####
@@ -3257,12 +3279,12 @@ ferdig_long.endring %>%
       geom_text(stat='count', aes(label=after_stat(count)),  hjust=-1, size = 5)  +
       ### Annotation av ekspertgruppe må legges inn manuelt eller kommenteres ut!
       annotate('segment', x = c(rep(3.15, 7)), xend = c(rep(3.15, 7)),  # Vertikale streker
-               y = c(1, 2, 3, 4, 6, 13, 16),
-               yend = c(1, 2, 3, 5, 12, 15, 16)) +
+               y = c(1, 2, 3, 4, 6, 14, 17),
+               yend = c(1, 2, 3, 5, 13, 16, 17)) +
       annotate('segment', x = c(rep(3, 14)), xend = c(rep(3.15, 14)) , # Horisontale streker
-               y = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16),
-               yend = c(1,1, 2,2, 3,3, 4,5, 6,12, 13,15, 16,16)  ) +
-      annotate("text", x = c(rep(3.4, 7)), y = c(16, 14, 9, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+               y = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17),
+               yend = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17)  ) +
+      annotate("text", x = c(rep(3.4, 7)), y = c(17, 15, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
                label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=4) +
       #scale_fill_brewer(palette = 'Blues') +
       scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
@@ -3277,5 +3299,6 @@ ferdig_long.endring %>%
             axis.text.y = element_text(face = "italic", size = 12))
     # Sett inn bedre indikasjon av artsgruppe etterhvert
   }
+ggsave('Endring3trinn/antallAarsaker_art.png', bg='transparent')
 
 
