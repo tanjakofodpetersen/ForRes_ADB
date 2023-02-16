@@ -1805,7 +1805,7 @@ ggsave('treslag/endring_matrise.png', bg='transparent')
 
 
 ##---     2.4 Doerstokkarter  ---####
-#---         2.4.1 Risikokategori  ---####
+#---          2.4.1 Risikokategori  ---####
 ferdig %>%
   filter(Fremmedartsstatus == "Doerstokkart",
          Kategori2023 != 'NR') %>%
@@ -1834,6 +1834,37 @@ ferdig %>%
             axis.text.x = element_text(size = 16))
   }
 ggsave('doerstokkarter/risikokategori.png', bg='transparent')
+
+#---            2.4.1.1 Risikokategori - doerstokk-karplanter ---####
+ferdig %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         Kategori2023 != 'NR',
+         Ekspertkomite == "Karplanter") %>%
+  {
+    ggplot(.,
+           aes(x = Kategori2023, fill = Kategori2023)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      scale_x_discrete( #drop=FALSE,
+        labels = c(#"NR" = "Ikke risikovurdert\nNR",
+          "NK" = "Ingen \nkjent risiko\nNK",
+          "LO" = "Lav \nrisiko\nLO",
+          "PH" = "Potensielt h\U00F8y \nrisiko\nPH",
+          "HI" = "H\U00F8y \nrisiko\nHI",
+          "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
+      scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
+                                   "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(size = 16))
+  }
+ggsave('doerstokkarter/Karplanter/risikokategori.png', bg='transparent')
 
 
 ##---         2.4.2 Etableringsklasse ---####
@@ -1900,6 +1931,71 @@ ferdig %>%
   }
 ggsave('doerstokkarter/etableringsklasse_kake.png', bg='transparent')
 
+##---             2.4.2.1 Etableringsklasse - doerstokk-karplanter ---####
+ferdig %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         !Kategori2023 == "NR",
+         Ekspertkomite=='Karplanter') %>%    # Tas ikke med i første runden
+  {
+    ggplot(.,
+           aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 5) +
+      scale_fill_manual(values = c("A"="#35a3b2",
+                                   "B1"="#5FB7B1","B2"="#71B581",
+                                   "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
+                                   "C3E"="#936649")) + 
+      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
+                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
+                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
+                                  "C0" = "Dokumentert i norsk natur",
+                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn" )) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+  }
+ggsave('doerstokkarter/Karplanter/etableringsklasse.png', bg='transparent')
+
+### Som kakediagram
+# Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
+ferdig %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         !Kategori2023 == "NR",
+         Ekspertkomite=='Karplanter') %>%    # Tas ikke med i første runden
+  group_by(Etableringsklasse_comb) %>%
+  tally() %>%
+  mutate(prop = n/sum(n)*100) %>%
+  arrange(desc(Etableringsklasse_comb)) %>%
+  mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
+    ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
+      geom_bar(width = 1, stat = "identity", color = "white") +
+      coord_polar("y", start = 0)+
+      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      scale_fill_manual(values = c("A"="#35a3b2",
+                                   "B1"="#5FB7B1","B2"="#71B581",
+                                   "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
+                                   "C3E"="#936649"),
+                        labels = c("A" = "Forekommer ikke i Norge",
+                                   "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
+                                   "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
+                                   "C0" = "Dokumentert i norsk natur",
+                                   "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn",
+                                   "C2" = "Selvstendig reproduserende",
+                                   "C3E" = "Etablert i norsk natur"),
+                        name = '') +
+      theme_void() +
+      theme(legend.position = "right",
+            legend.text = element_text(size = 10),
+            legend.spacing.y = unit(.75, 'cm'))  +
+      guides(fill = guide_legend(byrow = TRUE))
+  }
+ggsave('doerstokkarter/Karplanter/etableringsklasse_kake.png', bg='transparent')
 
 ##---         2.4.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
@@ -1937,6 +2033,45 @@ ferdig_long.endring %>%
             axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
   }
 ggsave('doerstokkarter/aarsakEndring.png', bg='transparent')
+
+##---                 2.4.3.1.1 Aarsak til endring - doerstokk-karplanter  ---####
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == "Doerstokkart",
+         Ekspertkomite == 'Karplanter',
+         Aarsak_norsk != "",
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>% {
+    ggplot(.,
+           aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
+                                   "Endret status"="#5FB7B1",
+                                   "Endret tolkning av retningslinjer"="#71B581",
+                                   "Ny kunnskap"="#A0BA5B",
+                                   "Ny tolkning av data"="#d2c160",
+                                   "Reell endring"="#e5b445")) +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
+                                  "Endret status"="Endret status",
+                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  "Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning av data",
+                                  "Reell endring"="Reell endring")) +
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.background = element_rect(fill='transparent', color = NA),
+            plot.background = element_rect(fill='transparent', color=NA),
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.line.y = element_blank(),
+            axis.line.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+  }
+ggsave('doerstokkarter/Karplanter/aarsakEndring.png', bg='transparent')
+
 
 ##---             2.4.3.1 Aarsak til endring; oppsummering  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
@@ -1993,6 +2128,64 @@ ferdig_long.endring %>%
             axis.text.x = element_text(size = 12))
   }
 ggsave('doerstokkarter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+
+##---                 2.4.3.1.2 Aarsak til endring; oppsummering - dorstokk-karplanter  ---####
+# Plot over antall arter med x årsaker til endring i risikokategori
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == 'Doerstokkart',
+         Ekspertkomite == 'Karplanter',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn.png', bg='transparent')
+
+# Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
+ferdig_long.endring %>%
+  filter(Fremmedartsstatus == 'Doerstokkart',
+         Ekspertkomite == 'Karplanter',
+         Aarsak_norsk != "",
+         Kategori2023 != 'NR',  # Ta bort NR-arter
+         Kategori2018 != Kategori2023) %>% 
+  distinct(VitenskapeligNavn, Aarsak_norsk) %>%
+  group_by(VitenskapeligNavn) %>%
+  # Filtrer ut arter som ikke har Endret tolkning av retningslinjer", og transformer tilbake til long-format
+  mutate(antall = 1) %>% 
+  pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
+  filter(`Endret tolkning av retningslinjer` == 1) %>% 
+  pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+  filter(!is.na(value)) %>% 
+  tally(name = 'antallAarsaker') %>% 
+  {
+    ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
+      geom_bar(color = 'black') +
+      labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
+      theme_minimal() +
+      theme(legend.position="none",
+            panel.grid = element_blank(),
+            axis.text.y = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.text.x = element_text(size = 12))
+  }
+ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
 
 ##---         2.4.4 Endring i kategori  ---####
 {
@@ -2137,12 +2330,158 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
 }
 ggsave('doerstokkarter/endring_verdier.png', bg='transparent')
 
+##---             2.4.4 Endring i kategori - doerstokk-karplanter  ---####
+{
+  ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    filter( Fremmedartsstatus == "Doerstokkart",
+            Ekspertkomite == 'Karplanter') %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE")))) %>% {
+                                            ggplot(., aes(x = x, 
+                                                          next_x = next_x, 
+                                                          node = node, 
+                                                          next_node = next_node,
+                                                          fill = node,
+                                                          label = node)) +
+                                              geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                                                           "NR"="gray90",
+                                                                           "NK"="#a6ad59",
+                                                                           "LO"="#60a5a3",
+                                                                           "PH"="#1b586c",
+                                                                           "HI"="#233368",
+                                                                           "SE"="#602d5e"),
+                                                                name = "") +
+                                              labs(x = "") +
+                                              theme_sankey(base_size = 16) +
+                                              theme(legend.position="none",
+                                                    panel.background = element_rect(fill='transparent', color = NA),
+                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                          }
+}
+ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
+
+# Med verdier
+{
+  # Step 1
+  Sankey1 <- ferdig %>%
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+                                     Kategori2018 == "NK" ~ "NK",
+                                     Kategori2018 == "LO" ~ "LO",
+                                     Kategori2018 == "PH" ~ "PH",
+                                     Kategori2018 == "HI" ~ "HI",
+                                     Kategori2018 == "SE" ~ "SE"),
+           Kategori2023 =  case_when(Kategori2023 =="NR" | Kategori2023 == "Ikke risikovurdert tidligere" ~ "NR",   # kombiner NR og arter fra HS
+                                     Kategori2023 == "NK" ~ "NK",
+                                     Kategori2023 == "LO" ~ "LO",
+                                     Kategori2023 == "PH" ~ "PH",
+                                     Kategori2023 == "HI" ~ "HI",
+                                     Kategori2023 == "SE" ~ "SE")) %>%
+    rename('Kategori 2018' = 'Kategori2018' ,
+           'Kategori 2023' = 'Kategori2023' ) %>%
+    filter( Fremmedartsstatus == "Doerstokkart",
+            Ekspertkomite == 'Karplanter') %>%
+    make_long(`Kategori 2018`, `Kategori 2023`) %>%
+    mutate(across(c(node, next_node),
+                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                                          "NR",
+                                          "NK",
+                                          "LO",
+                                          "PH",
+                                          "HI",
+                                          "SE"))))
+  
+  # Step 2
+  Sankey2 <- Sankey1 %>%
+    dplyr::group_by(node, next_node) %>%
+    tally()
+  # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
+  Sankey2 <- rbind(Sankey2 %>%
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
+  
+  ### Step 3
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+    mutate(across(c(x, next_x),
+                  ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
+    arrange(node, next_node)
+  
+  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  ggplot(Sankey3, aes(x = x, 
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,",\nn=", n2) )) +
+    geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
+    geom_sankey_label(aes(x = c(rep(.78,186),    # Ikke risikovurdert tidligere
+                                #rep(2.1,84),  # NR
+                                rep(.78,86), rep(2.1,133),   # NK
+                                rep(.78,23), rep(2.1,148),  # LO
+                                rep(.78,1), rep(2.1,5),  # PH
+                                rep(.78,1),rep(2.1,8),  # HI
+                                rep(2.1,3))),  # SE)),
+                      size = 3.5, color = 1, fill = "white") +
+    scale_fill_manual(values = c("NR"="gray90",
+                                 "NK"="#a6ad59",
+                                 "LO"="#60a5a3",
+                                 "PH"="#1b586c",
+                                 "HI"="#233368",
+                                 "SE"="#602d5e"),
+                      name = "") +
+    labs(x = "") +
+    theme_sankey(base_size = 16) +
+    theme(legend.position="none",
+          panel.background = element_rect(fill='transparent', color = NA),
+          plot.background = element_rect(fill='transparent', color=NA))
+  
+  rm(Sankey1, Sankey2, Sankey3)
+}
+ggsave('doerstokkarter/Karplanter/endring_verdier.png', bg='transparent')
+
 
 ##---         2.4.5 Matrise-plot ---####
 
 cont_DS <- ferdig %>%
   filter(!Kategori2018 == 'Ikke risikovurdert tidligere',
-         Fremmedartsstatus == "Doerstokkart") %>%  
+         Fremmedartsstatus == "Doerstokkart",
+         Ekspertkomite == 'Karplanter') %>%  
   droplevels() %>%
   mutate(across(c(Kategori2018, Kategori2023), ~ordered(.x, levels = c("NR","NK","LO","PH","HI","SE")))) %>%
   group_by(Kategori2018, Kategori2023) %>%
@@ -2194,7 +2533,7 @@ ggplot(cont_DS, aes(x = Kategori2018, y = Kategori2023)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave('doerstokkarter/endring_matrise.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/endring_matrise.png', bg='transparent')
 
 
 ##---     2.5 Doerstokkarter fra Horisontskanningen ---####
