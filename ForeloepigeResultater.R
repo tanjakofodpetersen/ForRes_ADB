@@ -471,7 +471,7 @@ ggsave('alleArter/endring.png', bg='transparent')
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  # Plot 
   ggplot(Sankey3, aes(x = x, 
                       next_x = next_x, 
                       node = node, 
@@ -479,15 +479,28 @@ ggsave('alleArter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,987),    # Ikke risikovurdert tidligere
-                                rep(2.1,201),  # NR
-                                rep(.78,443), rep(2.1,334),   # NK
-                                rep(.78,736), rep(2.1,1171),  # LO
-                                rep(.78,103), rep(2.1,373),  # PH
-                                rep(.78,108),rep(2.1,202),  # HI
-                                rep(.78,132), rep(2.1,228))),  # SE)),
-                      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("NR"="gray90",
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]) ) ),   
+      size = 3.5, color = 1, fill = "white")  +
+        scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -619,13 +632,27 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(#rep(.78,965),    # Ikke risikovurdert tidligere
-      rep(2.1,27),  # NR
-      rep(.78,443), rep(2.1,162),   # NK
-      rep(.78,736), rep(2.1,786),  # LO
-      rep(.78,103), rep(2.1,236),  # PH
-      rep(.78,108), rep(2.1,139),  # HI
-      rep(.78,132), rep(2.1,172))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      ## Ikke risikovurdert tidligere
+      #rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])
+      )),  # SE)),
       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1017,7 +1044,7 @@ ggsave('karplanter/endring.png', bg='transparent')
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  # Plot 
   ggplot(Sankey3, aes(x = x, 
                       next_x = next_x, 
                       node = node, 
@@ -1025,13 +1052,26 @@ ggsave('karplanter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,310),    # Ikke risikovurdert tidligere
-                                rep(2.1,91),  # NR
-                                rep(.78,361), rep(2.1,202),   # NK
-                                rep(.78,422), rep(2.1,600),  # LO
-                                rep(.78,46), rep(2.1,179),  # PH
-                                rep(.78,56),rep(2.1,91),  # HI
-                                rep(.78,73), rep(2.1,105))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1159,7 +1199,7 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  # Plot 
   ggplot(Sankey3, aes(x = x, 
                       next_x = next_x, 
                       node = node, 
@@ -1167,13 +1207,26 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(#rep(.78,289),    # Ikke risikovurdert tidligere
-      rep(2.1,14),  # NR
-      rep(.78,361), rep(2.1,124),   # NK
-      rep(.78,422), rep(2.1,470),  # LO
-      rep(.78,46), rep(2.1,167),  # PH
-      rep(.78,56),rep(2.1,84),  # HI
-      rep(.78,73), rep(2.1,99))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      ## Ikke risikovurdert tidligere
+      #rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1569,7 +1622,7 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
 ### Samme plots som over, men med verdier
 {
   # Step 1
-  Sankey1_tre <- ferdig_treslag %>%
+  Sankey1 <- ferdig_treslag %>%
     mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
@@ -1595,11 +1648,11 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
                                           "SE"))))
   
   # Step 2
-  Sankey2_tre <- Sankey1_tre %>%
+  Sankey2 <- Sankey1 %>%
     dplyr::group_by(node, next_node) %>%
     tally()
   # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
-  Sankey2_tre <- rbind(Sankey2_tre %>%
+  Sankey2 <- rbind(Sankey2 %>%
                          filter(is.na(next_node)) %>%
                          mutate(n2 = n,
                                 x = 'Kategori 2023',
@@ -1607,7 +1660,7 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
                          relocate(x, node, next_x, next_node, n, n2) %>%
                          select(-next_node),
                        
-                       Sankey2_tre %>%
+                       Sankey2 %>%
                          filter(!is.na(next_node)) %>%
                          group_by(node) %>%
                          summarise(n2 = sum(n)) %>%
@@ -1618,26 +1671,39 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
                          select(-next_node) )
   
   ### Step 3
-  Sankey3_tre <- full_join(Sankey1_tre, Sankey2_tre, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
     mutate(across(c(x, next_x),
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
-  ggplot(Sankey3_tre, aes(x = x, 
+  # Plot 
+  ggplot(Sankey3, aes(x = x, 
                           next_x = next_x, 
                           node = node, 
                           next_node = next_node,
                           fill = node,
                           label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,27),    # Ikke risikovurdert tidligere
-                                rep(2.1,13),  # NR
-                                rep(.78,42), rep(2.1,10),   # NK
-                                rep(.78,56), rep(2.1,71),  # LO
-                                rep(.78,4), rep(2.1,21),  # PH
-                                rep(.78,11),rep(2.1,18),  # HI
-                                rep(.78,12), rep(2.1,19))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]) )),  
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1652,14 +1718,14 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
   
-  rm(Sankey1_tre, Sankey2_tre, Sankey3_tre)
+  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('treslag/endring_verdier.png', bg='transparent')
 
 # Bare reviderte arter
 {
   # Step 1
-  Sankey1_tre <- ferdig_treslag %>%
+  Sankey1 <- ferdig_treslag %>%
     mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
@@ -1685,11 +1751,11 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
                                           "SE"))))
   
   # Step 2
-  Sankey2_tre <- Sankey1_tre %>%
+  Sankey2 <- Sankey1 %>%
     dplyr::group_by(node, next_node) %>%
     tally()
   # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
-  Sankey2_tre <- rbind(Sankey2_tre %>%
+  Sankey2 <- rbind(Sankey2 %>%
                          filter(is.na(next_node)) %>%
                          mutate(n2 = n,
                                 x = 'Kategori 2023',
@@ -1697,7 +1763,7 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
                          relocate(x, node, next_x, next_node, n, n2) %>%
                          select(-next_node),
                        
-                       Sankey2_tre %>%
+                       Sankey2 %>%
                          filter(!is.na(next_node)) %>%
                          group_by(node) %>%
                          summarise(n2 = sum(n)) %>%
@@ -1708,25 +1774,39 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
                          select(-next_node) )
   
   ### Step 3
-  Sankey3_tre <- full_join(Sankey1_tre, Sankey2_tre, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
+  Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
     mutate(across(c(x, next_x),
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
-  ggplot(Sankey3_tre, aes(x = x, 
+  # Plot 
+  ggplot(Sankey3, aes(x = x, 
                           next_x = next_x, 
                           node = node, 
                           next_node = next_node,
                           fill = node,
                           label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(2.1,1),  # NR
-                                rep(.78,42), rep(2.1,9),   # NK
-                                rep(.78,56), rep(2.1,59),  # LO
-                                rep(.78,4), rep(2.1,20),  # PH
-                                rep(.78,11),rep(2.1,18),  # HI
-                                rep(.78,12), rep(2.1,18))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      ## Ikke risikovurdert tidligere
+      #rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )), 
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -1741,7 +1821,7 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
   
-  rm(Sankey1_tre, Sankey2_tre, Sankey3_tre)
+  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('treslag/endring_verdier_reviderteArter.png', bg='transparent')
 
@@ -2297,7 +2377,7 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  # Plot 
   ggplot(Sankey3, aes(x = x, 
                       next_x = next_x, 
                       node = node, 
@@ -2305,13 +2385,26 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,698),    # Ikke risikovurdert tidligere
-                                #rep(2.1,84),  # NR
-                                rep(.78,143), rep(2.1,259),   # NK
-                                rep(.78,155), rep(2.1,536),  # LO
-                                rep(.78,20), rep(2.1,113),  # PH
-                                rep(.78,29),rep(2.1,86),  # HI
-                                rep(.78,23), rep(2.1,74))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      ## NR                          
+      #rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -2442,7 +2535,7 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
                   ~factor(.x, levels = c("Kategori 2018","Kategori 2023")))) %>%
     arrange(node, next_node)
   
-  # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
+  # Plot 
   ggplot(Sankey3, aes(x = x, 
                       next_x = next_x, 
                       node = node, 
@@ -2450,13 +2543,26 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,186),    # Ikke risikovurdert tidligere
-                                #rep(2.1,84),  # NR
-                                rep(.78,86), rep(2.1,133),   # NK
-                                rep(.78,23), rep(2.1,148),  # LO
-                                rep(.78,1), rep(2.1,5),  # PH
-                                rep(.78,1),rep(2.1,8),  # HI
-                                rep(2.1,3))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      ## NR                          
+      #rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE - OBS på om nedenstående skal inkluderes - test!
+      #rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -2853,13 +2959,20 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,698),    # Ikke risikovurdert tidligere
-                                rep(2.1,164),   # NK
-                                rep(2.1,338),  # LO
-                                rep(2.1,92),  # PH
-                                rep(2.1,57),  # HI
-                                rep(2.1,47))),  # SE
-                      size = 3.5, color = 1, fill = "white") +
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])   )), 
+      size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
                                  "NR"="gray90",
                                  "NK"="#a6ad59",
@@ -2872,6 +2985,7 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
+  
   rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('doerstokkarter/ArterFraHorisontskanning/endring_verdier.png', bg='transparent')
@@ -3199,13 +3313,26 @@ ggsave('marineArter/endring.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(rep(.78,117),    # Ikke risikovurdert tidligere
-                                rep(2.1,11),  # NR
-                                rep(.78,7), rep(2.1,6),   # NK
-                                rep(.78,53), rep(2.1,114),  # LO
-                                rep(.78,20), rep(2.1,32),  # PH
-                                rep(.78,18),rep(2.1,29),  # HI
-                                rep(.78,23), rep(2.1,46))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      # Ikke risikovurdert tidligere
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])   )),  
                       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
@@ -3342,13 +3469,26 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
                       fill = node,
                       label = paste0(node,",\nn=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-    geom_sankey_label(aes(x = c(#rep(.78,116),    # Ikke risikovurdert tidligere
-      rep(2.1,4),  # NR
-      rep(.78,7), #rep(2.1,6),   # NK
-      rep(.78,53), rep(2.1,54),  # LO
-      rep(.78,20), rep(2.1,14),  # PH
-      rep(.78,18),rep(2.1,21),  # HI
-      rep(.78,23), rep(2.1,28))),  # SE)),
+    geom_sankey_label(aes(x = c(
+      ## Ikke risikovurdert tidligere
+      #rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NR                          
+      rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      # NK  - OBS på om nedstående skal inkluderes
+      rep(.78, Sankey3 %>% filter(node=='NK' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      #rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # LO
+      rep(.78, Sankey3 %>% filter(node=='LO' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='LO' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # PH
+      rep(.78, Sankey3 %>% filter(node=='PH' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='PH' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # HI
+      rep(.78, Sankey3 %>% filter(node=='HI' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+      # SE
+      rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )), 
       size = 3.5, color = 1, fill = "white") +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
