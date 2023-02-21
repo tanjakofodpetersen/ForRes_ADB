@@ -8,7 +8,7 @@ library(data.table)
 library(ggsankey)
 
 getwd()
-setwd("C:/Users/TKP/OneDrive - artsdatabanken.no/Dokumenter/ForRes_ADB/20230216")
+setwd("C:/Users/TKP/OneDrive - artsdatabanken.no/Dokumenter/ForRes_ADB/20230221")
 
 # Les eksportfilen fra mappe; oppdater til nyeste filen
 ### OBS! Rett æ, ø og å før filen leses
@@ -28,7 +28,7 @@ ferdig %>%
   filter(Kategori2023 == "" )
 
 # Definer rette faktor-nivåer i rett rekkefølge
-##ferdig$Kategori2023[ferdig$Kategori2023==""] <- "NR"
+ferdig$Kategori2023[ferdig$Kategori2023==""] <- "NR"
 ##ferdig$Fremmedartsstatus[ferdig$Fremmedartsstatus==""] <- "Ikke fremmed"
 ferdig$Kategori2018[ferdig$Kategori2018==""] <- "Ikke risikovurdert tidligere"
 ferdig <- ferdig %>%
@@ -104,10 +104,20 @@ ferdig <- ferdig %>%
   mutate(across(c(Etableringsklasse_comb),
                 ~ordered(.x, levels = c("A","B1","B2","C0","C1","C2","C3E","Mangler"))))
 
-# Enkelte eksperter har ikke fylt ut korrekt for Etableringsklasse (især for sopp og karplanter); det betyr at alle arter som ikke er NR
-# med manglende etableringsklasse faktisk er etablerte (usikkert om det er C3, D1, D2 eller E). Legg derfor til den endringen manuelt
-ferdig[!ferdig$Kategori2023=='NR' & ferdig$Etableringsklasse_comb=='Mangler', 'Etableringsklasse_comb'] <- factor('C3E')
+# Noen arter ser ut til at etableringsklasse står tomt
+ferdig %>% filter(Etableringsklasse_comb == 'Mangler') %>% group_by(Fremmedartsstatus, Ekspertkomite) %>% tally()
+# Se hvilke arter det er ; filtrer NR arter - de er rette som de står
+ferdig %>% filter(Etableringsklasse_comb == 'Mangler') %>%
+  filter(Kategori2023 != 'NR') %>% 
+  select(Ekspertkomite, VitenskapeligNavn, NorskNavn, Fremmedartsstatus,
+         Etableringsklasse, Etableringsklasse_comb, EtablertPer1800,
+         Kategori2018, Kategori2023) %>% 
+  print()
 
+# Alle her er enten 'Regionalt fremmede' eller selvstendig reproduserende arter hvor eksperten har glemt å hakke av for endelig 
+# kategori fanen for bakgrunnsdata. Vi kan overstyre og legge inn samlekategorien for etablerte arter:
+ferdig[!ferdig$Kategori2023=='NR' &
+         ferdig$Etableringsklasse_comb=='Mangler', 'Etableringsklasse_comb'] <- factor('C3E')
 
 ##------------------------------------------------------------------------------------------------####
 ##---   2. PLOTS  ---####
@@ -155,12 +165,12 @@ ferdig %>%
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
-      geom_segment(aes(x = 'A', xend = 'C1', y = 925, yend = 925),
+      geom_segment(aes(x = 'A', xend = 'C1', y = 950, yend = 950),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 950, label='D\U00F8rstokkarter'), size=4) +
-      geom_segment(aes(x = 'C2', xend = 'C3E', y = 925, yend = 925),
+      geom_text(aes(x = 'B2', y = 975, label='D\U00F8rstokkarter'), size=4) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 950, yend = 950),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 950, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 975, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1",
                                    "B2"="#71B581",
@@ -512,10 +522,10 @@ ggsave('alleArter/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
-}
+  }
 ggsave('alleArter/endring_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
+
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
@@ -666,10 +676,9 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('alleArter/endring_reviderteArter_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 
 ##---         2.1.5 Matrise-plot ---####
@@ -776,12 +785,12 @@ ferdig %>%
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
       geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
-      geom_segment(aes(x = 'A', xend = 'C1', y = 650, yend = 650),
+      geom_segment(aes(x = 'A', xend = 'C1', y = 675, yend = 675),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 675, label='D\U00F8rstokkarter'), size=4) +
-      geom_segment(aes(x = 'C2', xend = 'C3E', y = 650, yend = 650),
+      geom_text(aes(x = 'B2', y = 700, label='D\U00F8rstokkarter'), size=4) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 675, yend = 675),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 675, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 700, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -1085,10 +1094,9 @@ ggsave('karplanter/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('karplanter/endring_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
@@ -1240,10 +1248,9 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('karplanter/endring_reviderteArter_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 ##---         2.2.5 Matrise-plot ---####
 
@@ -1718,9 +1725,9 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
   
-  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('treslag/endring_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 # Bare reviderte arter
 {
@@ -1820,10 +1827,9 @@ ggsave('treslag/endring_verdier.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
-}
+  }
 ggsave('treslag/endring_verdier_reviderteArter.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 
 ##---         2.3.5 Matrise-plot ---####
@@ -2418,10 +2424,9 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('doerstokkarter/endring_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 ##---             2.4.4 Endring i kategori - doerstokk-karplanter  ---####
 {
@@ -2576,11 +2581,10 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
+
 }
 ggsave('doerstokkarter/Karplanter/endring_verdier.png', bg='transparent')
-
+rm(Sankey1, Sankey2, Sankey3)
 
 ##---         2.4.5 Matrise-plot ---####
 
@@ -2985,10 +2989,9 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
-}
+  }
 ggsave('doerstokkarter/ArterFraHorisontskanning/endring_verdier.png', bg='transparent')
+rm(Sankey1, Sankey2, Sankey3)
 
 
 ##---     2.6 Marine arter  ---####
@@ -3346,11 +3349,9 @@ ggsave('marineArter/endring.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
-}
+  }
 ggsave('marineArter/endring_verdier.png', bg='transparent')
-
+rm(Sankey1, Sankey2, Sankey3)
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
@@ -3502,11 +3503,9 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
           plot.background = element_rect(fill='transparent', color=NA))
-  
-  rm(Sankey1, Sankey2, Sankey3)
 }
 ggsave('marineArter/endring_reviderteArter_verdier.png', bg='transparent')
-
+rm(Sankey1, Sankey2, Sankey3)
 
 ##---         2.6.5 Matrise-plot ---####
 cont_marin <- ferdig %>%
@@ -3600,6 +3599,7 @@ ggplot(trinn3,
         axis.ticks.y = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = .8, size = 12))
 ggsave('Endring3trinn/ekspertkomite.png', bg='transparent')
+
 
 ##---     3.2 Plot Årsak til endring  ---####
 # OBS summen av barene her er ikke antallet av arter; de kan ha hatt mer en én endringskategori
@@ -3705,14 +3705,14 @@ ferdig_long.endring %>%
   {
     ggplot(., aes(x = Aarsak_norsk, y = VitenskapeligNavn)) +
       geom_tile(aes(fill = farge), color = 'gray40') +
-      ### Annotation a vekspertgruppe må legges inn manuelt eller kommenteres ut!
+      ### Annotation av ekspertgruppe må legges inn manuelt eller kommenteres ut!
       annotate('segment', x = c(rep(3.6, 7)), xend = c(rep(3.6, 7)),  # Vertikale streker
-               y = c(1, 2, 3, 4, 6, 14, 17),
-               yend = c(1, 2, 3, 5, 13, 16, 17)) +
+               y = c(1, 2, 3, 4, 6, 15, 18),
+               yend = c(1, 2, 3, 5, 14, 17, 18)) +
       annotate('segment', x = c(rep(3.55, 14)), xend = c(rep(3.6, 14)) , # Horisontale streker
-               y = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17),
-               yend = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17)  ) +
-      annotate("text", x = c(rep(3.85, 7)), y = c(17, 15, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+               y = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18),
+               yend = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18)  ) +
+      annotate("text", x = c(rep(3.85, 7)), y = c(18, 16, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
                label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=3.5) +
       coord_cartesian(clip = "off") +  # Tillat tekst i hele margin
       ###
@@ -3758,12 +3758,12 @@ ferdig_long.endring %>%
       geom_text(stat='count', aes(label=after_stat(count)),  hjust=-1, size = 5)  +
       ### Annotation av ekspertgruppe må legges inn manuelt eller kommenteres ut!
       annotate('segment', x = c(rep(3.15, 7)), xend = c(rep(3.15, 7)),  # Vertikale streker
-               y = c(1, 2, 3, 4, 6, 14, 17),
-               yend = c(1, 2, 3, 5, 13, 16, 17)) +
+               y = c(1, 2, 3, 4, 6, 15, 18),
+               yend = c(1, 2, 3, 5, 14, 17, 18)) +
       annotate('segment', x = c(rep(3, 14)), xend = c(rep(3.15, 14)) , # Horisontale streker
-               y = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17),
-               yend = c(1,1, 2,2, 3,3, 4,5, 6,13, 14,16, 17,17)  ) +
-      annotate("text", x = c(rep(3.4, 7)), y = c(17, 15, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
+               y = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18),
+               yend = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18)  ) +
+      annotate("text", x = c(rep(3.4, 7)), y = c(18, 16, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
                label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=4) +
       #scale_fill_brewer(palette = 'Blues') +
       scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
@@ -3776,7 +3776,6 @@ ferdig_long.endring %>%
             panel.grid = element_blank(),
             axis.text.x = element_blank(),
             axis.text.y = element_text(face = "italic", size = 12))
-    # Sett inn bedre indikasjon av artsgruppe etterhvert
   }
 ggsave('Endring3trinn/antallAarsaker_art.png', bg='transparent')
 
