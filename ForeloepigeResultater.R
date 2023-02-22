@@ -8,7 +8,7 @@ library(data.table)
 library(ggsankey)
 
 getwd()
-setwd("C:/Users/TKP/OneDrive - artsdatabanken.no/Dokumenter/ForRes_ADB/20230221")
+setwd("C:/Users/TKP/OneDrive - artsdatabanken.no/Dokumenter/ForRes_ADB/20230222") # Sett egen sti
 
 # Les eksportfilen fra mappe; oppdater til nyeste filen
 ### OBS! Rett æ, ø og å før filen leses
@@ -27,10 +27,14 @@ ferdig %>%
          Kategori2018, Kategori2023, AarsakTilEndringIKategori) %>%
   filter(Kategori2023 == "" )
 
-# Definer rette faktor-nivåer i rett rekkefølge
+# Om ikke den er tom er noe feil - oftest har det vært en issue med at NR-arter hvor det ikke er tikket av for alt
+# i vurderingen ikke blir tildelt 'NR' i Kategori2023 - kan fikses manuelt her, ellers gir det problemer senere
 ferdig$Kategori2023[ferdig$Kategori2023==""] <- "NR"
-##ferdig$Fremmedartsstatus[ferdig$Fremmedartsstatus==""] <- "Ikke fremmed"
+##ferdig$Fremmedartsstatus[ferdig$Fremmedartsstatus==""] <- "Ikke fremmed"  # Dette var tidligere et issue
+
+# Definer en bedre kategori for arter fra Horisontskanningen
 ferdig$Kategori2018[ferdig$Kategori2018==""] <- "Ikke risikovurdert tidligere"
+# Definer rette faktor-nivåer i rett rekkefølge
 ferdig <- ferdig %>%
   # Risikokategorier
   mutate(across(c(Kategori2023, Kategori2018),
@@ -45,7 +49,7 @@ ferdig <- ferdig %>%
                 ~ordered(.x, levels = c("A","B1","B2","C0","C1","C2","C3","D1","D2","E",""))))
 
 ##---       1.1 Split utslagsgivende kriterier  --####
-# Split utslagsgivende kriterier i hhv. Invasjonspotensiale og Økologisk effekt, samt samle til AxB 
+# Split utslagsgivende kriterier i hhv. Invasjonspotensiale og Økologisk effekt, samt samle A og B til AxB 
 ferdig <- ferdig %>%
   separate(Kriterier2023, into = c('invasjonspotensiale', 'effekt'),
            sep = ",", extra = "merge", fill = "right",
@@ -104,19 +108,26 @@ ferdig <- ferdig %>%
   mutate(across(c(Etableringsklasse_comb),
                 ~ordered(.x, levels = c("A","B1","B2","C0","C1","C2","C3E","Mangler"))))
 
-# Noen arter ser ut til at etableringsklasse står tomt
-ferdig %>% filter(Etableringsklasse_comb == 'Mangler') %>% group_by(Fremmedartsstatus, Ekspertkomite) %>% tally()
-# Se hvilke arter det er ; filtrer NR arter - de er rette som de står
+# Sjekk hvilke arter som har tom etableringsklasse - det kan her både være arter som er NR (rett), arter som ikke er
+# fremmede (rett), eller arter hvor eksperten har glemt at tikke av endelig klasse
+# under bakgrunnsdata (feil)
+ferdig %>%
+  filter(Etableringsklasse_comb == 'Mangler') %>%
+  group_by(Fremmedartsstatus, Ekspertkomite) %>%
+  tally()
+# Se hvilke arter det er; filtrer ut NR-arter og de som ikke er fremmede - de er rette som de
+# står og skal ikke ha en etableringsklasse
 ferdig %>% filter(Etableringsklasse_comb == 'Mangler') %>%
-  filter(Kategori2023 != 'NR') %>% 
+  filter(Kategori2023 != 'NR',
+         Fremmedartsstatus != 'Ikke fremmed') %>%    # Denne burde være dekket av 'NR', men tar den med for en sikkerhets skyld
   select(Ekspertkomite, VitenskapeligNavn, NorskNavn, Fremmedartsstatus,
          Etableringsklasse, Etableringsklasse_comb, EtablertPer1800,
          Kategori2018, Kategori2023) %>% 
   print()
 
-# Alle her er enten 'Regionalt fremmede' eller selvstendig reproduserende arter hvor eksperten har glemt å hakke av for endelig 
-# kategori fanen for bakgrunnsdata. Vi kan overstyre og legge inn samlekategorien for etablerte arter:
-ferdig[!ferdig$Kategori2023=='NR' &
+# Alle her er enten 'Regionalt fremmede' eller 'selvstendig reproduserende/etablerte arter' hvor eksperten har glemt å
+# hakke av for endelig kategori fanen for bakgrunnsdata. Vi kan overstyre og legge inn samlekategorien for etablerte arter:
+ferdig[!(ferdig$Kategori2023=='NR' | ferdig$Fremmedartsstatus=='Ikke fremmed') &
          ferdig$Etableringsklasse_comb=='Mangler', 'Etableringsklasse_comb'] <- factor('C3E')
 
 ##------------------------------------------------------------------------------------------------####
@@ -130,7 +141,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
           "NK" = "Ingen kjent \nrisiko\nNK",
@@ -144,16 +155,19 @@ ferdig %>%
         "PH"="#1b586c",
         "HI"="#233368",
         "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip = "off")
   }
-ggsave('alleArter/risikokategori.png', bg='transparent')
+ggsave('alleArter/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.1.2 Etableringsklasse ---####
@@ -164,13 +178,13 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
-      geom_segment(aes(x = 'A', xend = 'C1', y = 950, yend = 950),
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
+      geom_segment(aes(x = 'A', xend = 'C1', y = 1050, yend = 1050),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 975, label='D\U00F8rstokkarter'), size=4) +
-      geom_segment(aes(x = 'C2', xend = 'C3E', y = 950, yend = 950),
+      geom_text(aes(x = 'B2', y = 1100, label='D\U00F8rstokkarter'), size=5) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 1050, yend = 1050),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 975, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 1100, label='Selvstendig reproduserende'), size=5, hjust=-.00001) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1",
                                    "B2"="#71B581",
@@ -178,23 +192,26 @@ ferdig %>%
                                    "C1"="#d2c160",
                                    "C2"="#e5b445",
                                    "C3E"="#936649")) +
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn",
-                                  "C2" = "Selvstendig reproduserende",
-                                  "C3E" = "Etablert i norsk natur")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn",
+                                  "C2" = "Selvstendig \nreproduserende",
+                                  "C3E" = "Etablert i \nnorsk natur")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size =12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,.5,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('alleArter/etableringsklasse.png', bg='transparent')
+ggsave('alleArter/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -207,8 +224,8 @@ ferdig %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -221,13 +238,15 @@ ferdig %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
-            legend.text = element_text(size = 10),
-            legend.spacing.y = unit(.75, 'cm'))  +
+            legend.text = element_text(size = 16),
+            legend.spacing.y = unit(.75, 'cm'),
+            plot.margin = unit(c(0,0,0,0), 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('alleArter/etableringsklasse_kake.png', bg='transparent')
+ggsave('alleArter/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.1.3 Aarsak til endring  ---####
@@ -239,20 +258,20 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
                                    #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
                                   #"Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -262,9 +281,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('alleArter/aarsakEndring.png', bg='transparent')
+ggsave('alleArter/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---             2.1.3.1 Aarsak til endring; oppsummering  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
@@ -279,16 +301,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('alleArter/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('alleArter/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -302,23 +327,26 @@ ferdig_long.endring %>%
   pivot_wider(names_from = Aarsak_norsk, values_from = antall) %>% 
   filter(`Endret tolkning av retningslinjer` == 1) %>% 
   pivot_longer(cols =c(`Reell endring`, `Endret tolkning av retningslinjer`,
-               `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
+                       `Ny tolkning av data`, `Endrede avgrensninger/retningslinjer`, `Endret status`), names_to = 'Aarsak_norsk') %>% 
   filter(!is.na(value)) %>% 
   tally(name = 'antallAarsaker') %>% 
   {
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.1.4 Endring i kategori  ---####
@@ -376,7 +404,7 @@ ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent
 # Versjon med forkortet kategori
 {
   ferdig %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -392,7 +420,7 @@ ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -406,8 +434,8 @@ ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -419,16 +447,20 @@ ggsave('alleArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('alleArter/endring.png', bg='transparent')
+ggsave('alleArter/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
   # Step 1
   Sankey1 <- ferdig %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -444,7 +476,7 @@ ggsave('alleArter/endring.png', bg='transparent')
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -487,11 +519,11 @@ ggsave('alleArter/endring.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NR                          
       rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
@@ -509,8 +541,8 @@ ggsave('alleArter/endring.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]) ) ),   
-      size = 3.5, color = 1, fill = "white")  +
-        scale_fill_manual(values = c("NR"="gray90",
+      size = 6, color = 1, fill = "white", hjust=.25)  +
+    scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -521,9 +553,13 @@ ggsave('alleArter/endring.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
-  }
-ggsave('alleArter/endring_verdier.png', bg='transparent')
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
+}
+ggsave('alleArter/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 
@@ -640,7 +676,7 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -662,8 +698,8 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])
-      )),  # SE)),
-      size = 3.5, color = 1, fill = "white") +
+    )),  # SE)),
+    size = 6, color = 1, fill = "white", hjust = .25) +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -675,16 +711,19 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
 }
-ggsave('alleArter/endring_reviderteArter_verdier.png', bg='transparent')
+ggsave('alleArter/endring_reviderteArter_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 
 ##---         2.1.5 Matrise-plot ---####
 
 # Lag contingency table med verdier
-
 cont <- ferdig %>%
   filter(!Kategori2018 == 'Ikke risikovurdert tidligere') %>%  
   droplevels() %>%
@@ -724,20 +763,22 @@ ggplot(cont, aes(x = Kategori2018, y = Kategori2023)) +
                                'HI'="#233368",
                                'SE'="#602d5e"), na.value = 'white') +
   labs(x = 'Kategori 2018', y = 'Kategori 2023') +
-  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.25, size = 5) +
-  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .35, size = 5) +
-  theme_minimal() +
+  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.001, size = 6) +
+  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .75, size = 6) +
+  theme_minimal(base_size = 16) +
   theme(legend.position = 'none',
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =12),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =16),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 16),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank())  +
+  coord_cartesian(clip = "off")
 
-ggsave('alleArter/endring_matrise.png', bg='transparent')
+ggsave('alleArter/endring_matrise.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---     2.2 Karplanter  ---####
@@ -750,7 +791,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
           "NK" = "Ingen kjent \nrisiko\nNK",
@@ -764,16 +805,19 @@ ferdig %>%
         "PH"="#1b586c",
         "HI"="#233368",
         "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip = "off")
   }
-ggsave('karplanter/risikokategori.png', bg='transparent')
+ggsave('karplanter/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---         2.2.2 Etableringsklasse ---####
 ferdig %>%
@@ -784,34 +828,40 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
-      geom_segment(aes(x = 'A', xend = 'C1', y = 675, yend = 675),
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
+      geom_segment(aes(x = 'A', xend = 'C1', y = 750, yend = 750),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 700, label='D\U00F8rstokkarter'), size=4) +
-      geom_segment(aes(x = 'C2', xend = 'C3E', y = 675, yend = 675),
+      geom_text(aes(x = 'B2', y = 800, label='D\U00F8rstokkarter'), size=5) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 750, yend = 750),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 700, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 800, label='Selvstendig reproduserende'), size=5, hjust=-.00001) +
       scale_fill_manual(values = c("A"="#35a3b2",
-                                   "B1"="#5FB7B1","B2"="#71B581",
-                                   "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
+                                   "B1"="#5FB7B1",
+                                   "B2"="#71B581",
+                                   "C0"="#A0BA5B",
+                                   "C1"="#d2c160",
+                                   "C2"="#e5b445",
                                    "C3E"="#936649")) +
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn",
-                                  "C2" = "Selvstendig reproduserende",
-                                  "C3E" = "Etablert i norsk natur")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn",
+                                  "C2" = "Selvstendig \nreproduserende",
+                                  "C3E" = "Etablert i \nnorsk natur")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,.5,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('karplanter/etableringsklasse.png', bg='transparent')
+ggsave('karplanter/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -825,8 +875,8 @@ ferdig %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -839,13 +889,15 @@ ferdig %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
-            legend.text = element_text(size = 10),
-            legend.spacing.y = unit(.75, 'cm'))  +
+            legend.text = element_text(size = 16),
+            legend.spacing.y = unit(.75, 'cm'),
+            plot.margin = unit(c(0,0,0,0), 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('karplanter/etableringsklasse_kake.png', bg='transparent')
+ggsave('karplanter/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.2.3 Aarsak til endring  ---####
@@ -858,20 +910,20 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
                                    #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
                                   #"Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -881,9 +933,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('karplanter/aarsakEndring.png', bg='transparent')
+ggsave('karplanter/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---             2.2.3.1 Aarsak til endring; oppsummering  ---####
@@ -900,16 +955,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('karplanter/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('karplanter/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
@@ -932,22 +990,25 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---         2.2.4 Endring i kategori  ---####
 {
   ferdig %>%
     filter( Ekspertkomite =="Karplanter") %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -963,7 +1024,7 @@ ggsave('karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparen
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -977,8 +1038,8 @@ ggsave('karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparen
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -990,17 +1051,21 @@ ggsave('karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparen
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('karplanter/endring.png', bg='transparent')
+ggsave('karplanter/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
   # Step 1
   Sankey1 <- ferdig %>%
     filter( Ekspertkomite =="Karplanter") %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -1016,7 +1081,7 @@ ggsave('karplanter/endring.png', bg='transparent')
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -1059,11 +1124,11 @@ ggsave('karplanter/endring.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NR                          
       rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
@@ -1081,8 +1146,9 @@ ggsave('karplanter/endring.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
-                      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("NR"="gray90",
+      size = 6, color = 1, fill = "white", hjust = .25) +
+    scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
+                                 "NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -1093,9 +1159,13 @@ ggsave('karplanter/endring.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
 }
-ggsave('karplanter/endring_verdier.png', bg='transparent')
+ggsave('karplanter/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
@@ -1132,7 +1202,7 @@ rm(Sankey1, Sankey2, Sankey3)
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
                                               scale_fill_manual(values = c("NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -1144,10 +1214,13 @@ rm(Sankey1, Sankey2, Sankey3)
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm'))
                                           }
 }
-ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
+ggsave('karplanter/endring_reviderteArter.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
@@ -1213,7 +1286,7 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -1235,7 +1308,7 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
-      size = 3.5, color = 1, fill = "white") +
+      size = 6, color = 1, fill = "white", hjust = .25) +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -1247,9 +1320,13 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
 }
-ggsave('karplanter/endring_reviderteArter_verdier.png', bg='transparent')
+ggsave('karplanter/endring_reviderteArter_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 ##---         2.2.5 Matrise-plot ---####
@@ -1293,21 +1370,23 @@ ggplot(cont_karplanter, aes(x = Kategori2018, y = Kategori2023)) +
                                'PH'="#1b586c",
                                'HI'="#233368",
                                'SE'="#602d5e"), na.value = 'white') +
-  labs(x = 'Risikokategori 2018', y = 'Risikokategori 2023') +
-  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.25, size = 5) +
-  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .35, size = 5) +
-  theme_minimal() +
+  labs(x = 'Kategori 2018', y = 'Kategori 2023') +
+  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.001, size = 6) +
+  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .75, size = 6) +
+  theme_minimal(base_size = 16) +
   theme(legend.position = 'none',
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size = 12),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =16),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 16),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank())  +
+  coord_cartesian(clip = "off")
 
-ggsave('karplanter/endring_matrise.png', bg='transparent')
+ggsave('karplanter/endring_matrise.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---     2.3 Fremmede treslag  ---####
@@ -1337,7 +1416,7 @@ ferdig_treslag %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
           "NK" = "Ingen kjent \nrisiko\nNK",
@@ -1351,16 +1430,19 @@ ferdig_treslag %>%
         "PH"="#1b586c",
         "HI"="#233368",
         "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('treslag/risikokategori.png', bg='transparent')
+ggsave('treslag/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.3.2 Etableringsklasse ---####
@@ -1371,34 +1453,37 @@ ferdig_treslag %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
-      geom_segment(aes(x = 'A', xend = 'C1', y = 72, yend = 72),
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
+      geom_segment(aes(x = 'A', xend = 'C1', y = 80, yend = 80),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 75, label='D\U00F8rstokkarter'), size=4, hjust=-.75) +
-      geom_segment(aes(x = 'C2', xend = 'C3E', y = 72, yend = 72),
+      geom_text(aes(x = 'B2', y = 85, label='D\U00F8rstokkarter'), size=5, hjust=-.75) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 80, yend = 80),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 75, label='Selvstendig reproduserende'), size=4, hjust=-.1) +
+      geom_text(aes(x = 'C2', y = 85, label='Selvstendig reproduserende'), size=5, hjust=-.00001) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
                                    "C3E"="#936649")) +
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn",
-                                  "C2" = "Selvstendig reproduserende",
-                                  "C3E" = "Etablert i norsk natur")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn",
+                                  "C2" = "Selvstendig \nreproduserende",
+                                  "C3E" = "Etablert i \nnorsk natur")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,.5,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('treslag/etableringsklasse.png', bg='transparent')
+ggsave('treslag/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -1411,8 +1496,8 @@ ferdig_treslag %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -1425,13 +1510,15 @@ ferdig_treslag %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
             legend.text = element_text(size = 10),
-            legend.spacing.y = unit(.75, 'cm'))  +
+            legend.spacing.y = unit(.75, 'cm'),
+            plot.margin = unit(c(0,0,0,0), 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('treslag/etableringsklasse_kake.png', bg='transparent')
+ggsave('treslag/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.3.3 Aarsak til endring  ---####
@@ -1443,20 +1530,20 @@ ferdig_long.endring_treslag %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
                                    #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
                                   #"Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -1466,9 +1553,11 @@ ferdig_long.endring_treslag %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
-  }
-ggsave('treslag/aarsakEndring.png', bg='transparent')
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')  }
+ggsave('treslag/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---             2.3.3.1 Aarsak til endring; oppsummering  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
@@ -1483,16 +1572,19 @@ ferdig_long.endring_treslag %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('treslag/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('treslag/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring_treslag %>%
@@ -1513,22 +1605,25 @@ ferdig_long.endring_treslag %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('treslag/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('treslag/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.3.4 Endring i kategori  ---####
 {
   ferdig_treslag %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -1544,7 +1639,7 @@ ggsave('treslag/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -1558,8 +1653,8 @@ ggsave('treslag/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -1571,10 +1666,14 @@ ggsave('treslag/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('treslag/endring.png', bg='transparent')
+ggsave('treslag/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
 {
@@ -1609,7 +1708,7 @@ ggsave('treslag/endring.png', bg='transparent')
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
                                               scale_fill_manual(values = c("NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -1621,16 +1720,20 @@ ggsave('treslag/endring.png', bg='transparent')
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('treslag/endring_reviderteArter.png', bg='transparent')
+ggsave('treslag/endring_reviderteArter.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Samme plots som over, men med verdier
 {
   # Step 1
   Sankey1 <- ferdig_treslag %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -1646,7 +1749,7 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -1660,22 +1763,22 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
     tally()
   # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
   Sankey2 <- rbind(Sankey2 %>%
-                         filter(is.na(next_node)) %>%
-                         mutate(n2 = n,
-                                x = 'Kategori 2023',
-                                next_x = NA)  %>%
-                         relocate(x, node, next_x, next_node, n, n2) %>%
-                         select(-next_node),
-                       
-                       Sankey2 %>%
-                         filter(!is.na(next_node)) %>%
-                         group_by(node) %>%
-                         summarise(n2 = sum(n)) %>%
-                         mutate(next_node = 'x', n = NA,
-                                x = 'Kategori 2018',
-                                next_x = 'Kategori 2023') %>%
-                         relocate(x, node, next_x, next_node, n, n2)%>%
-                         select(-next_node) )
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
   
   ### Step 3
   Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
@@ -1685,15 +1788,15 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
   
   # Plot 
   ggplot(Sankey3, aes(x = x, 
-                          next_x = next_x, 
-                          node = node, 
-                          next_node = next_node,
-                          fill = node,
-                          label = paste0(node,",\nn=", n2) )) +
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NR                          
       rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
@@ -1711,8 +1814,9 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]) )),  
-                      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("NR"="gray90",
+      size = 6, color = 1, fill = "white", hjust=.25) +
+    scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
+                                 "NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -1723,10 +1827,14 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
   
 }
-ggsave('treslag/endring_verdier.png', bg='transparent')
+ggsave('treslag/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 # Bare reviderte arter
@@ -1763,22 +1871,22 @@ rm(Sankey1, Sankey2, Sankey3)
     tally()
   # Her må fikses litt manuelt - alle rekker med 'NA' på next_node skal stå som de er, men alle nodes med kategori i next_node skal summeres
   Sankey2 <- rbind(Sankey2 %>%
-                         filter(is.na(next_node)) %>%
-                         mutate(n2 = n,
-                                x = 'Kategori 2023',
-                                next_x = NA)  %>%
-                         relocate(x, node, next_x, next_node, n, n2) %>%
-                         select(-next_node),
-                       
-                       Sankey2 %>%
-                         filter(!is.na(next_node)) %>%
-                         group_by(node) %>%
-                         summarise(n2 = sum(n)) %>%
-                         mutate(next_node = 'x', n = NA,
-                                x = 'Kategori 2018',
-                                next_x = 'Kategori 2023') %>%
-                         relocate(x, node, next_x, next_node, n, n2)%>%
-                         select(-next_node) )
+                     filter(is.na(next_node)) %>%
+                     mutate(n2 = n,
+                            x = 'Kategori 2023',
+                            next_x = NA)  %>%
+                     relocate(x, node, next_x, next_node, n, n2) %>%
+                     select(-next_node),
+                   
+                   Sankey2 %>%
+                     filter(!is.na(next_node)) %>%
+                     group_by(node) %>%
+                     summarise(n2 = sum(n)) %>%
+                     mutate(next_node = 'x', n = NA,
+                            x = 'Kategori 2018',
+                            next_x = 'Kategori 2023') %>%
+                     relocate(x, node, next_x, next_node, n, n2)%>%
+                     select(-next_node) )
   
   ### Step 3
   Sankey3 <- full_join(Sankey1, Sankey2, by=c('node'='node', 'x'='x', 'next_x'='next_x')) %>%
@@ -1788,11 +1896,11 @@ rm(Sankey1, Sankey2, Sankey3)
   
   # Plot 
   ggplot(Sankey3, aes(x = x, 
-                          next_x = next_x, 
-                          node = node, 
-                          next_node = next_node,
-                          fill = node,
-                          label = paste0(node,",\nn=", n2) )) +
+                      next_x = next_x, 
+                      node = node, 
+                      next_node = next_node,
+                      fill = node,
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -1814,7 +1922,7 @@ rm(Sankey1, Sankey2, Sankey3)
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )), 
-                      size = 3.5, color = 1, fill = "white") +
+      size = 6, color = 1, fill = "white", hjust = .25) +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -1826,9 +1934,13 @@ rm(Sankey1, Sankey2, Sankey3)
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
-  }
-ggsave('treslag/endring_verdier_reviderteArter.png', bg='transparent')
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
+}
+ggsave('treslag/endring_verdier_reviderteArter.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 
@@ -1874,20 +1986,22 @@ ggplot(cont_treslag, aes(x = Kategori2018, y = Kategori2023)) +
                                'HI'="#233368",
                                'SE'="#602d5e"), na.value = 'white') +
   labs(x = 'Kategori 2018', y = 'Kategori 2023') +
-  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.25, size = 5) +
-  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .35, size = 5) +
-  theme_minimal() +
+  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.001, size = 6) +
+  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .75, size = 6) +
+  theme_minimal(base_size = 16) +
   theme(legend.position = 'none',
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size = 12),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =16),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 16),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank())  +
+  coord_cartesian(clip = "off")
 
-ggsave('treslag/endring_matrise.png', bg='transparent')
+ggsave('treslag/endring_matrise.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---     2.4 Doerstokkarter  ---####
@@ -1900,7 +2014,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
           "NK" = "Ingen \nkjent risiko\nNK",
@@ -1910,16 +2024,19 @@ ferdig %>%
           "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/risikokategori.png', bg='transparent')
+ggsave('doerstokkarter/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 #---            2.4.1.1 Risikokategori - doerstokk-karplanter ---####
 ferdig %>%
@@ -1931,7 +2048,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
           "NK" = "Ingen \nkjent risiko\nNK",
@@ -1941,16 +2058,19 @@ ferdig %>%
           "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip ='off')
   }
-ggsave('doerstokkarter/Karplanter/risikokategori.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.4.2 Etableringsklasse ---####
@@ -1962,26 +2082,29 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
                                    "C3E"="#936649")) + 
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn" )) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/etableringsklasse.png', bg='transparent')
+ggsave('doerstokkarter/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -1995,8 +2118,8 @@ ferdig %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -2009,13 +2132,14 @@ ferdig %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
-            legend.text = element_text(size = 10),
+            legend.text = element_text(size = 16),
             legend.spacing.y = unit(.75, 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('doerstokkarter/etableringsklasse_kake.png', bg='transparent')
+ggsave('doerstokkarter/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---             2.4.2.1 Etableringsklasse - doerstokk-karplanter ---####
 ferdig %>%
@@ -2032,21 +2156,24 @@ ferdig %>%
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
                                    "C3E"="#936649")) + 
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn" )) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,.5,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/Karplanter/etableringsklasse.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -2061,8 +2188,8 @@ ferdig %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -2075,13 +2202,15 @@ ferdig %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
-            legend.text = element_text(size = 10),
-            legend.spacing.y = unit(.75, 'cm'))  +
+            legend.text = element_text(size = 16),
+            legend.spacing.y = unit(.75, 'cm'),
+            plot.margin = unit(c(0,0,0,0), 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('doerstokkarter/Karplanter/etableringsklasse_kake.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---         2.4.3 Aarsak til endring  ---####
 ferdig_long.endring %>%
@@ -2093,20 +2222,20 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
-                                   "Ny kunnskap"="#A0BA5B",
+                                   #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                  "Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -2116,9 +2245,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/aarsakEndring.png', bg='transparent')
+ggsave('doerstokkarter/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---                 2.4.3.1.1 Aarsak til endring - doerstokk-karplanter  ---####
 ferdig_long.endring %>%
@@ -2131,20 +2263,20 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
-                                   "Ny kunnskap"="#A0BA5B",
+                                   #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                  "Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -2154,9 +2286,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/Karplanter/aarsakEndring.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---             2.4.3.1 Aarsak til endring; oppsummering  ---####
@@ -2173,16 +2308,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('doerstokkarter/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -2204,16 +2342,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('doerstokkarter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---                 2.4.3.1.2 Aarsak til endring; oppsummering - dorstokk-karplanter  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
@@ -2230,16 +2371,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -2262,21 +2406,24 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---         2.4.4 Endring i kategori  ---####
 {
   ferdig %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -2293,7 +2440,7 @@ ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn_endretTolkning.png',
     filter( Fremmedartsstatus == "Doerstokkart") %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -2307,8 +2454,8 @@ ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn_endretTolkning.png',
                                                           fill = node,
                                                           label = node)) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -2320,16 +2467,20 @@ ggsave('doerstokkarter/Karplanter/aarsakEndring_antallTrinn_endretTolkning.png',
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('doerstokkarter/endring.png', bg='transparent')
+ggsave('doerstokkarter/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
   # Step 1
   Sankey1 <- ferdig %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -2346,7 +2497,7 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
     filter( Fremmedartsstatus == "Doerstokkart") %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -2389,11 +2540,11 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       ## NR                          
       #rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
@@ -2411,8 +2562,9 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
-                      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("NR"="gray90",
+      size = 6, color = 1, fill = "white", hjust=.25) +
+    scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
+                                 "NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -2423,15 +2575,19 @@ ggsave('doerstokkarter/endring.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
 }
-ggsave('doerstokkarter/endring_verdier.png', bg='transparent')
+ggsave('doerstokkarter/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 ##---             2.4.4 Endring i kategori - doerstokk-karplanter  ---####
 {
   ferdig %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -2449,7 +2605,7 @@ rm(Sankey1, Sankey2, Sankey3)
             Ekspertkomite == 'Karplanter') %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -2463,8 +2619,8 @@ rm(Sankey1, Sankey2, Sankey3)
                                                           fill = node,
                                                           label = node)) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -2476,16 +2632,19 @@ rm(Sankey1, Sankey2, Sankey3)
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
   # Step 1
   Sankey1 <- ferdig %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -2503,7 +2662,7 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
             Ekspertkomite == 'Karplanter') %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -2546,11 +2705,11 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       ## NR                          
       #rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
@@ -2568,8 +2727,9 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
       # SE - OBS på om nedenstående skal inkluderes - test!
       #rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )),  
-                      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("NR"="gray90",
+      size = 6, color = 1, fill = "white", hjust=.25) +
+    scale_fill_manual(values = c("Ikke risikovurdert \ntidligere",
+                                 "NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -2580,10 +2740,14 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
-
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
+  
 }
-ggsave('doerstokkarter/Karplanter/endring_verdier.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 ##---         2.4.5 Matrise-plot ---####
@@ -2629,25 +2793,27 @@ ggplot(cont_DS, aes(x = Kategori2018, y = Kategori2023)) +
                                'PH'="#1b586c",
                                'HI'="#233368",
                                'SE'="#602d5e"), na.value = 'white') +
-  labs(x = 'Risikokategori 2018', y = 'Risikokategori 2023') +
-  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.25, size = 5) +
-  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .35, size = 5) +
-  theme_minimal() +
+  labs(x = 'Kategori 2018', y = 'Kategori 2023') +
+  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.001, size = 6) +
+  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .75, size = 6) +
+  theme_minimal(base_size = 16) +
   theme(legend.position = 'none',
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =12),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =16),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 16),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank())  +
+  coord_cartesian(clip = "off")
 
-ggsave('doerstokkarter/Karplanter/endring_matrise.png', bg='transparent')
+ggsave('doerstokkarter/Karplanter/endring_matrise.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---     2.5 Doerstokkarter fra Horisontskanningen ---####
-#---         2.5.1 Risikokategori  ---####
+##---         2.5.1 Risikokategori  ---####
 ferdig %>%
   filter(Fremmedartsstatus == "Doerstokkart",
          Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere',
@@ -2657,7 +2823,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c("NR" = "Ikke \nrisikovurdert\nNR",
                    "NK" = "Ingen kjent \nrisiko\nNK",
@@ -2667,16 +2833,19 @@ ferdig %>%
                    "SE" = "Sv\U00E6rt h\U00F8y \nrisiko\nSE")) +
       scale_fill_manual(values = c("NR"="white", "NK"="#a6ad59", "LO"="#60a5a3",
                                    "PH"="#1b586c", "HI"="#233368", "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip='off')
   }
-ggsave('doerstokkarter/ArterFraHorisontskanning/risikokategori.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.5.2 Etableringsklasse ---####
@@ -2689,26 +2858,29 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
                                    "C3E"="#936649")) + 
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn" )) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn" )) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,.5,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/ArterFraHorisontskanning/etableringsklasse.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -2723,8 +2895,8 @@ ferdig %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -2737,13 +2909,15 @@ ferdig %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
-            legend.text = element_text(size = 10),
-            legend.spacing.y = unit(.75, 'cm'))  +
+            legend.text = element_text(size = 16),
+            legend.spacing.y = unit(.75, 'cm'),
+            plot.margin = unit(c(0,0,0,0), 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('doerstokkarter/ArterFraHorisontskanning/etableringsklasse_kake.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.5.3 Aarsak til endring  ---####
@@ -2757,20 +2931,20 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
-                                   "Ny kunnskap"="#A0BA5B",
+                                   #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
-                                  "Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
+                                  #"Ny kunnskap"="Ny kunnskap",
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -2780,9 +2954,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12))
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---             2.5.3.1 Aarsak til endring; oppsummering  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
@@ -2799,16 +2976,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -2831,16 +3011,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.5.4 Endring i kategori  ---####
@@ -2848,7 +3031,7 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endret
   ferdig %>%
     filter( Fremmedartsstatus == "Doerstokkart",
             Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -2864,7 +3047,7 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endret
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -2878,8 +3061,8 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endret
                                                           fill = node,
                                                           label = node)) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -2891,10 +3074,14 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/aarsakEndring_antallTrinn_endret
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
+ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ## Samme plot som over, men med verdier
 {
@@ -2902,7 +3089,7 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
   Sankey1 <- ferdig %>%
     filter( Fremmedartsstatus == "Doerstokkart",
             Kategori2018 == 'NR' | Kategori2018 == 'Ikke risikovurdert tidligere') %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -2918,7 +3105,7 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -2961,11 +3148,11 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
       rep(2.1, Sankey3 %>% filter(node=='NK' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
       # LO
@@ -2976,8 +3163,8 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
       rep(2.1, Sankey3 %>% filter(node=='HI' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
       # SE
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])   )), 
-      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+      size = 6, color = 1, fill = "white", hjust=.25) +
+    scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                  "NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -2988,9 +3175,13 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
-  }
-ggsave('doerstokkarter/ArterFraHorisontskanning/endring_verdier.png', bg='transparent')
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
+}
+ggsave('doerstokkarter/ArterFraHorisontskanning/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 
@@ -3007,7 +3198,7 @@ ferdig %>%
            aes(x = Kategori2023, fill = Kategori2023)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_x_discrete( #drop=FALSE,
         labels = c(#"NR" = "Ikke risikovurdert\nNR",
           "NK" = "Ingen kjent \nrisiko\nNK",
@@ -3021,16 +3212,19 @@ ferdig %>%
         "PH"="#1b586c",
         "HI"="#233368",
         "SE"="#602d5e")) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(size = 16))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('marineArter/risikokategori.png', bg='transparent')
+ggsave('marineArter/risikokategori.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---         2.6.2 Etableringsklasse ---####
 ferdig %>%
@@ -3041,34 +3235,37 @@ ferdig %>%
            aes(x = Etableringsklasse_comb, fill = Etableringsklasse_comb)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-1, size = 5) +
-      geom_segment(aes(x = 'A', xend = 'C1', y = 180, yend = 180),
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
+      geom_segment(aes(x = 'A', xend = 'C1', y = 225, yend = 225),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'B2', y = 185, label='Doerstokkarter'), size=4) +
-      geom_segment(aes(x = 'C2', xend = 'C3E', y = 180, yend = 180),
+      geom_text(aes(x = 'B2', y = 250, label='Doerstokkarter'), size=5) +
+      geom_segment(aes(x = 'C2', xend = 'C3E', y = 225, yend = 225),
                    arrow = arrow(angle=90, ends='both', length = unit(.25, 'cm')), linewidth = .5) +
-      geom_text(aes(x = 'C2', y = 185, label='Selvstendig reproduserende'), size=4, hjust=-.01) +
+      geom_text(aes(x = 'C2', y = 250, label='Selvstendig reproduserende'), size=5, hjust=-.000001) +
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
                                    "C3E"="#936649")) +
-      scale_x_discrete(labels = c("A" = "Forekommer ikke i Norge",
-                                  "B1" = "Forekommer innend\U00F8rs eller \ni lukkede installasjoner",
-                                  "B2" = "Forekommer utend\U00F8rs p\U00E5 \neget produksjonsareal",
-                                  "C0" = "Dokumentert i norsk natur",
-                                  "C1" = "Overlever vinteren utend\U00F8rs \nuten menneskelig tilsyn",
-                                  "C2" = "Selvstendig reproduserende",
-                                  "C3E" = "Etablert i norsk natur")) +
-      theme_minimal() +
+      scale_x_discrete(labels = c("A" = "Forekommer \nikke i Norge",
+                                  "B1" = "Forekommer \ninnend\U00F8rs eller i \nlukkede installasjoner",
+                                  "B2" = "Forekommer \nutend\U00F8rs p\U00E5 eget \nproduksjonsareal",
+                                  "C0" = "Dokumentert i \nnorsk natur",
+                                  "C1" = "Overlever vinteren \nutend\U00F8rs uten \nmenneskelig tilsyn",
+                                  "C2" = "Selvstendig \nreproduserende",
+                                  "C3E" = "Etablert i \nnorsk natur")) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.y = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .8, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size =16),
+            plot.margin = unit(c(.5,.5,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('marineArter/etableringsklasse.png', bg='transparent')
+ggsave('marineArter/etableringsklasse.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ### Som kakediagram
 # Dette er ikke anbefalt å gjøre, og har derfor ingen direkte pakker til det - derfor må det gjøres noe krumspring for å få til
@@ -3082,8 +3279,8 @@ ferdig %>%
   mutate(lab.ypos = cumsum(prop) - 0.5*prop) %>%  {
     ggplot(., aes(x = "", y = prop, fill = Etableringsklasse_comb)) +
       geom_bar(width = 1, stat = "identity", color = "white") +
-      coord_polar("y", start = 0)+
-      geom_text(aes(y = lab.ypos, label = n), color = "white", size = 5)+
+      coord_polar("y", start = 0, clip = 'off')+
+      geom_text(aes(y = lab.ypos, x=1.3, label = n), color = "white", size = 6)+
       scale_fill_manual(values = c("A"="#35a3b2",
                                    "B1"="#5FB7B1","B2"="#71B581",
                                    "C0"="#A0BA5B", "C1"="#d2c160", "C2"="#e5b445",
@@ -3096,13 +3293,15 @@ ferdig %>%
                                    "C2" = "Selvstendig reproduserende",
                                    "C3E" = "Etablert i norsk natur"),
                         name = '') +
-      theme_void() +
+      theme_void(base_size = 16) +
       theme(legend.position = "right",
-            legend.text = element_text(size = 10),
-            legend.spacing.y = unit(.75, 'cm'))  +
+            legend.text = element_text(size = 16),
+            legend.spacing.y = unit(.75, 'cm'),
+            plot.margin = unit(c(0,0,0,0), 'cm'))  +
       guides(fill = guide_legend(byrow = TRUE))
   }
-ggsave('marineArter/etableringsklasse_kake.png', bg='transparent')
+ggsave('marineArter/etableringsklasse_kake.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---         2.6.3 Aarsak til endring  ---####
@@ -3115,20 +3314,20 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
                                    #"Ny kunnskap"="#A0BA5B",
                                    "Ny tolkning av data"="#d2c160",
                                    "Reell endring"="#e5b445")) +
-      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
-                                  "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+      scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede \navgrensninger i \nretningslinjene",
+                                  "Endret status"="Endret \nstatus",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
                                   #"Ny kunnskap"="Ny kunnskap",
-                                  "Ny tolkning av data"="Ny tolkning av data",
-                                  "Reell endring"="Reell endring")) +
-      theme_minimal() +
+                                  "Ny tolkning av data"="Ny tolkning \nav data",
+                                  "Reell endring"="Reell \nendring") ) +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -3138,9 +3337,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+            plot.margin = unit(c(.5,0,-1,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('marineArter/aarsakEndring.png', bg='transparent')
+ggsave('marineArter/aarsakEndring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---             2.6.3.1 Aarsak til endring; oppsummering  ---####
 # Plot over antall arter med x årsaker til endring i risikokategori
@@ -3156,16 +3358,19 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('marineArter/aarsakEndring_antallTrinn.png', bg='transparent')
+ggsave('marineArter/aarsakEndring_antallTrinn.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Samme plot som over, men inkluder bare arter hvor "Endret tolkning av retningslinjer" inngår som én av årsakene
 ferdig_long.endring %>%
@@ -3187,22 +3392,25 @@ ferdig_long.endring %>%
     ggplot(., aes(x = factor(antallAarsaker), fill = factor(antallAarsaker))) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +   # Bruk ev. x = "Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c('#A0BA5B', '#d2c160', '#e5b445')) + 
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.grid = element_blank(),
             axis.text.y = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(size = 12))
+            axis.text.x = element_text(size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm')) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('marineArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent')
+ggsave('marineArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 ##---         2.6.4 Endring i kategori  ---####
 {
   ferdig %>%
     filter(Marint == "True" & Terrestrisk == "False") %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -3218,7 +3426,7 @@ ggsave('marineArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transpare
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -3232,8 +3440,8 @@ ggsave('marineArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transpare
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
-                                              scale_fill_manual(values = c("Ikke risikovurdert tidligere"="gray70",
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
+                                              scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
                                                                            "NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -3245,17 +3453,21 @@ ggsave('marineArter/aarsakEndring_antallTrinn_endretTolkning.png', bg='transpare
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('marineArter/endring.png', bg='transparent')
+ggsave('marineArter/endring.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
   # Step 1
   Sankey1 <- ferdig %>%
     filter(Marint == "True" & Terrestrisk == "False") %>%
-    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert tidligere",   # kombiner NR og arter fra HS
+    mutate(Kategori2018 =  case_when(Kategori2018 =="NR" | Kategori2018 == "Ikke risikovurdert tidligere" ~ "Ikke risikovurdert \ntidligere",   # kombiner NR og arter fra HS
                                      Kategori2018 == "NK" ~ "NK",
                                      Kategori2018 == "LO" ~ "LO",
                                      Kategori2018 == "PH" ~ "PH",
@@ -3271,7 +3483,7 @@ ggsave('marineArter/endring.png', bg='transparent')
            'Kategori 2023' = 'Kategori2023' ) %>%
     make_long(`Kategori 2018`, `Kategori 2023`) %>%
     mutate(across(c(node, next_node),
-                  ~ordered(.x, levels = c("Ikke risikovurdert tidligere",
+                  ~ordered(.x, levels = c("Ikke risikovurdert \ntidligere",
                                           "NR",
                                           "NK",
                                           "LO",
@@ -3314,11 +3526,11 @@ ggsave('marineArter/endring.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
-      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert tidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
+      rep(.78, Sankey3 %>% filter(node=='Ikke risikovurdert \ntidligere') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NR                          
       rep(2.1, Sankey3 %>% filter(node=='NR') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       # NK
@@ -3336,8 +3548,9 @@ ggsave('marineArter/endring.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])   )),  
-                      size = 3.5, color = 1, fill = "white") +
-    scale_fill_manual(values = c("NR"="gray90",
+      size = 6, color = 1, fill = "white", hjust=.25) +
+    scale_fill_manual(values = c("Ikke risikovurdert \ntidligere"="gray70",
+                                 "NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
                                  "PH"="#1b586c",
@@ -3348,9 +3561,13 @@ ggsave('marineArter/endring.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
-  }
-ggsave('marineArter/endring_verdier.png', bg='transparent')
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
+}
+ggsave('marineArter/endring_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 ## Bare reviderte arter; fjern "Ikke risikovurdert tidligere" fra 2018-siden
@@ -3387,7 +3604,7 @@ rm(Sankey1, Sankey2, Sankey3)
                                                           label = node,
                                                           fill = node )) +
                                               geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-                                              geom_sankey_label(size = 3.5, color = 1, fill = "white") +
+                                              geom_sankey_label(size = 6, color = 1, fill = "white") +
                                               scale_fill_manual(values = c("NR"="gray90",
                                                                            "NK"="#a6ad59",
                                                                            "LO"="#60a5a3",
@@ -3399,10 +3616,14 @@ rm(Sankey1, Sankey2, Sankey3)
                                               theme_sankey(base_size = 16) +
                                               theme(legend.position="none",
                                                     panel.background = element_rect(fill='transparent', color = NA),
-                                                    plot.background = element_rect(fill='transparent', color=NA))
+                                                    plot.background = element_rect(fill='transparent', color=NA),
+                                                    axis.text.x = element_text(size = 16),
+                                                    plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+                                              coord_cartesian(clip = 'off')
                                           }
 }
-ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
+ggsave('marineArter/endring_reviderteArter.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 # Med verdier
 {
@@ -3468,7 +3689,7 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,",\nn=", n2) )) +
+                      label = paste0(node,", n=", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -3490,7 +3711,7 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
       # SE
       rep(.78, Sankey3 %>% filter(node=='SE' & !is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
       rep(2.1, Sankey3 %>% filter(node=='SE' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]])  )), 
-      size = 3.5, color = 1, fill = "white") +
+      size = 6, color = 1, fill = "white", hjust=.25) +
     scale_fill_manual(values = c("NR"="gray90",
                                  "NK"="#a6ad59",
                                  "LO"="#60a5a3",
@@ -3502,9 +3723,13 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent')
     theme_sankey(base_size = 16) +
     theme(legend.position="none",
           panel.background = element_rect(fill='transparent', color = NA),
-          plot.background = element_rect(fill='transparent', color=NA))
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 16),
+          plot.margin = unit(c(0,-2.5,0,-2.5), 'cm')) +
+    coord_cartesian(clip = 'off')
 }
-ggsave('marineArter/endring_reviderteArter_verdier.png', bg='transparent')
+ggsave('marineArter/endring_reviderteArter_verdier.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 rm(Sankey1, Sankey2, Sankey3)
 
 ##---         2.6.5 Matrise-plot ---####
@@ -3547,21 +3772,23 @@ ggplot(cont_marin, aes(x = Kategori2018, y = Kategori2023)) +
                                'PH'="#1b586c",
                                'HI'="#233368",
                                'SE'="#602d5e"), na.value = 'white') +
-  labs(x = 'Risikokategori 2018', y = 'Risikokategori 2023') +
-  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.25, size = 5) +
-  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .35, size = 5) +
-  theme_minimal() +
+  labs(x = 'Kategori 2018', y = 'Kategori 2023') +
+  geom_label(aes(0.3, Kategori2023, label = Kategori2023, fill=Kategori2023), color='white', hjust = -.001, size = 6) +
+  geom_label(aes(Kategori2018, 0.5, label = Kategori2018, fill=Kategori2018), color='white', vjust = .75, size = 6) +
+  theme_minimal(base_size = 16) +
   theme(legend.position = 'none',
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
         axis.ticks = element_blank(),
         axis.text = element_blank(),
-        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size = 12),
-        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 12),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =16),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 16),
         panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank())  +
+  coord_cartesian(clip = "off")
 
-ggsave('marineArter/endring_matrise.png', bg='transparent')
+ggsave('marineArter/endring_matrise.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---------------------------------------------------------------------------------------------------####
@@ -3588,17 +3815,27 @@ ggplot(trinn3,
        aes(x = Ekspertkomite, fill=Ekspertkomite)) +
   geom_bar(color = 'black') +
   labs(x = "", y = "") +
-  geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 5) +
+  geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
   scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
-  theme_minimal() +
+  scale_x_discrete(labels = c("Amfibier og reptiler" = "Amfibier \nog reptiler",
+                              "Fisker" = "Fisker",
+                              "Karplanter" = "Karplanter",
+                              "Kromister" = "Kromister",
+                              "Limniske invertebrater" = "Limniske \ninvertebrater",
+                              "Pattedyr" = "Pattedyr",
+                              "Terrestriske invertebrater" = "Terrestriske \ninvertebrater")) +theme_minimal(base_size = 16) +
   theme(legend.position="none",
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
         panel.grid = element_blank(),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = .8, size = 12))
-ggsave('Endring3trinn/ekspertkomite.png', bg='transparent')
+        axis.text.x = element_text(angle = 45, hjust = .8, size = 16),
+        plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+  coord_cartesian(clip = 'off')
+
+ggsave('Endring3trinn/ekspertkomite.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---     3.2 Plot Årsak til endring  ---####
