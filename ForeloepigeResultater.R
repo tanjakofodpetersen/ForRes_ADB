@@ -519,7 +519,7 @@ ggsave('alleArter/endring.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -676,7 +676,7 @@ ggsave('alleArter/endring_reviderteArter.png', bg='transparent')
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -1124,7 +1124,7 @@ ggsave('karplanter/endring.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -1286,7 +1286,7 @@ ggsave('karplanter/endring_reviderteArter.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -1792,7 +1792,7 @@ ggsave('treslag/endring_reviderteArter.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -1900,7 +1900,7 @@ rm(Sankey1, Sankey2, Sankey3)
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -2540,7 +2540,7 @@ ggsave('doerstokkarter/endring.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -2705,7 +2705,7 @@ ggsave('doerstokkarter/Karplanter/endring.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -3148,7 +3148,7 @@ ggsave('doerstokkarter/ArterFraHorisontskanning/endring.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -3526,7 +3526,7 @@ ggsave('marineArter/endring.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       # Ikke risikovurdert tidligere
@@ -3689,7 +3689,7 @@ ggsave('marineArter/endring_reviderteArter.png', bg='transparent',
                       node = node, 
                       next_node = next_node,
                       fill = node,
-                      label = paste0(node,", n=", n2) )) +
+                      label = paste0(node,", ", n2) )) +
     geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
     geom_sankey_label(aes(x = c(
       ## Ikke risikovurdert tidligere
@@ -3850,7 +3850,7 @@ ferdig_long.endring %>%
            aes(x = Aarsak_norsk, fill = Aarsak_norsk)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +
-      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.2, size = 5) +
+      geom_text(stat='count', aes(label=after_stat(count)), vjust=-.5, size = 6) +
       scale_fill_manual(values = c("Endrede avgrensninger/retningslinjer"="#35a3b2",
                                    "Endret status"="#5FB7B1",
                                    "Endret tolkning av retningslinjer"="#71B581",
@@ -3859,11 +3859,11 @@ ferdig_long.endring %>%
                                    "Reell endring"="#e5b445")) +
       scale_x_discrete(labels = c("Endrede avgrensninger/retningslinjer"="Endrede avgrensninger\ni retningslinjene",
                                   "Endret status"="Endret status",
-                                  "Endret tolkning av\nretningslinjer"="Endret tolkning av retningslinjer",
+                                  "Endret tolkning av retningslinjer"="Endret tolkning av \nretningslinjer",
                                   #"Ny kunnskap"="Ny kunnskap",
                                   "Ny tolkning av data"="Ny tolkning av data",
                                   "Reell endring"="Reell endring")) +
-      theme_minimal() +
+      theme_minimal(base_size = 16) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
@@ -3873,9 +3873,12 @@ ferdig_long.endring %>%
             axis.line.y = element_blank(),
             axis.line.x = element_blank(),
             axis.ticks.x = element_blank(),
-            axis.text.x = element_text(angle = 45, hjust = .9, size = 12)) 
+            axis.text.x = element_text(angle = 45, hjust = .9, size = 16),
+            plot.margin = unit(c(.5,0,-.5,0), 'cm') ) +
+      coord_cartesian(clip = 'off') 
   }
-ggsave('Endring3trinn/aarsak.png', bg='transparent')
+ggsave('Endring3trinn/aarsak.png', bg='transparent', 
+       width = 18.15, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 # Årsaker for hver art
@@ -3915,7 +3918,9 @@ ferdig_long.endring %>%
         axis.ticks.x = element_blank(),
         axis.text.x = element_text(angle = 90, hjust = .9, size = 12)) 
 
-ggsave('Endring3trinn/aarsakArt.png', bg='transparent')
+#ggsave('Endring3trinn/aarsakArt.png', bg='transparent')
+# Ikke justert til bedre skriftstørrelse da den ikke er så veldig pedagogisk
+
 
 
 ##---     3.3 Plot Årsak til endring, matrise-plot  ---####
@@ -3950,7 +3955,8 @@ ferdig_long.endring %>%
                y = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18),
                yend = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18)  ) +
       annotate("text", x = c(rep(3.85, 7)), y = c(18, 16, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
-               label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=3.5) +
+               label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'),
+               size=2.5) +
       coord_cartesian(clip = "off") +  # Tillat tekst i hele margin
       ###
       scale_fill_manual(values = c('Reell endring' = '#e5b445',
@@ -3964,18 +3970,21 @@ ferdig_long.endring %>%
                                   "Endret tolkning av retningslinjer"="Endret tolkning \nav retningslinjer",
                                   #"Ny kunnskap"="Ny kunnskap",
                                   "Ny tolkning av data"="Ny tolkning \nav data",
-                                  "Reell endring"="Reell \nendring"), ) +
+                                  "Reell endring"="Reell \nendring")) +
       scale_y_discrete(limits = rev) +
+      theme_void(base_size = 9) +
       theme(legend.position = 'none',
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             axis.text.y = element_text(face = "italic"),
+            axis.text.x = element_text(size = 9),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank(),
             plot.margin = unit(c(.5,5,.5,1), "lines") # Øk margin 
       )
   }
-ggsave('Endring3trinn/aarsakArt_matrise.png', bg='transparent')
+ggsave('Endring3trinn/aarsakArt_matrise.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---     3.4 Plot antall årsaker til endring ---####
@@ -3992,7 +4001,7 @@ ferdig_long.endring %>%
     ggplot(., aes(y = VitenskapeligNavn,fill = Ekspertkomite)) +
       geom_bar(color = 'black') +
       labs(x = "", y = "") +  # Bruk ev. y="Antall \U00E5rsaker til endring i risikokategori"
-      geom_text(stat='count', aes(label=after_stat(count)),  hjust=-1, size = 5)  +
+      geom_text(stat='count', aes(label=after_stat(count)),  hjust=-1, size = 4)  +
       ### Annotation av ekspertgruppe må legges inn manuelt eller kommenteres ut!
       annotate('segment', x = c(rep(3.15, 7)), xend = c(rep(3.15, 7)),  # Vertikale streker
                y = c(1, 2, 3, 4, 6, 15, 18),
@@ -4001,19 +4010,22 @@ ferdig_long.endring %>%
                y = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18),
                yend = c(1,1, 2,2, 3,3, 4,5, 6,14, 15,17, 18,18)  ) +
       annotate("text", x = c(rep(3.4, 7)), y = c(18, 16, 10, 4.5, 3, 2, 1),  # Ekspertkomitenavn
-               label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'), size=4) +
+               label = c('Amfibier og \nreptiler', 'Fisker', 'Karplanter', 'Kromister', 'Limniske \ninvertebrater', 'Pattedyr', 'Terrestriske \ninvertebrater'),
+               size=2.5) +
       #scale_fill_brewer(palette = 'Blues') +
       scale_fill_manual(values=c('#35a3b2', '#5FB7B1', '#71B581', '#A0BA5B', '#d2c160', '#e5b445', '#936649')) +  # Obs på antall farger om antall artsgrupper endres
       scale_y_discrete(limits = rev) +
-      theme_minimal() +
+      theme_minimal(base_size = 9) +
       theme(legend.position="none",
             panel.background = element_rect(fill='transparent', color = NA),
             plot.background = element_rect(fill='transparent', color=NA),
             plot.margin = unit(c(.5,3,.5,1), "lines"),
             panel.grid = element_blank(),
             axis.text.x = element_blank(),
-            axis.text.y = element_text(face = "italic", size = 12))
+            axis.text.y = element_text(face = "italic", size = 9)) +
+      coord_cartesian(clip = 'off')
   }
-ggsave('Endring3trinn/antallAarsaker_art.png', bg='transparent')
+ggsave('Endring3trinn/antallAarsaker_art.png', bg='transparent', 
+       width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
