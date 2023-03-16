@@ -4029,3 +4029,51 @@ ggsave('Endring3trinn/antallAarsaker_art.png', bg='transparent',
        width = 28.01, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
+
+##---------------------------------------------------------------------------------------------------####
+##---   4.  MATRISEPLOT ---####
+
+# Lag et matriseplot lik det Olga har etterspurt for alle arter
+# Start med å lage en contingency table med verdier for de ulike kombinasjoner
+
+# Lag contingency table med verdier
+risk <- ferdig %>%
+  filter(#Vurderingsomraade == 'N',
+         !Kategori2023 == 'NR') %>%   # om det trengs flere filtre, legg til her
+  group_by(invScore, effektScore) %>% 
+  tally() %>% 
+  as.data.frame() %>% 
+  mutate(farge = case_when( (invScore == '1' & effektScore == '1') ~ 'NK',
+                            (invScore == '1' & effektScore %in% c('2','3')) ~ 'LO',
+                            (invScore == '2' & effektScore %in% c('1','2')) ~ 'LO',
+                            (invScore == '3' & effektScore %in% c('1','2')) ~ 'LO',
+                            (invScore == '4' & effektScore == '1') | (invScore == '1' & effektScore == '4') ~ 'PH',
+                            (invScore == '2' & effektScore %in% c('3','4')) ~ 'HI',
+                            (invScore == '3' & effektScore == '3') ~ 'HI',
+                            (invScore == '4' & effektScore == '2') ~ 'HI',
+                            (invScore == '3' & effektScore == '4') ~ 'SE',
+                            (invScore == '4' & effektScore %in% c('3','4')) ~ 'SE'))
+
+ggplot(risk, aes(x = invScore, y = effektScore)) +
+  geom_tile(aes(fill = farge), alpha=.9, color = 'white') +
+  geom_text(aes(label = n), size = 6, color = 'white') +
+  scale_fill_manual(values = c("NK"="#a6ad59",
+                               "LO"="#60a5a3",
+                               "PH"="#1b586c",
+                               "HI"="#233368",
+                               "SE"="#602d5e"),
+                    na.value = 'white') +
+  labs(#title = 'Fastlands-Norge',   # Juster iht. filtrering
+       x = 'Invasjonspotensiale', y = '\U00D8kologisk effekt') +
+  theme_minimal(base_size = 16) +
+  theme(legend.position = 'none',
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color=NA),
+        axis.title.y = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = 3, size =16),
+        axis.title.x = element_text(margin = margin(t = 10, r = 10, b = 10, l = 10), vjust = -3, size = 16),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())  +
+  coord_cartesian(clip = "off")
+
+
+
