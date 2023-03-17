@@ -4039,6 +4039,7 @@ ggsave('Endring3trinn/antallAarsaker_art.png', bg='transparent',
 # Lag contingency table med verdier
 risk <- ferdig %>%
   filter(#Vurderingsomraade == 'N',
+         #!Fremmedartsstatus == 'Regionalt fremmed',
          !Kategori2023 == 'NR') %>%   # om det trengs flere filtre, legg til her
   group_by(invScore, effektScore) %>% 
   tally() %>% 
@@ -4075,5 +4076,7 @@ ggplot(risk, aes(x = invScore, y = effektScore)) +
         panel.grid.minor = element_blank())  +
   coord_cartesian(clip = "off")
 
+ggsave('risikomatrise/alleVurderinger.png', bg='transparent', 
+       width = 13.24, height = 11.62, units = 'cm', device = 'png', dpi = 300)
 
 
