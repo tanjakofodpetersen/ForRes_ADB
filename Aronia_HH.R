@@ -30,22 +30,27 @@ aronia %>%
                 fill = node,
                 label = node)) +
   geom_sankey(flow.alpha = 0.75, node.color = 0.9, width = .3) +
-  geom_sankey_label(size = 5, color = 1, fill = "white") +
-  #scale_fill_manual(values = c("Aronia arbutifolia"="#d7191c",  #lightcoral
-  #                             "Aronia melanocarpa"="#abd9e9",  #steelblue3
-  #                             "Aronia \U00D7prunifolia"="#fdae61",   #khaki1
-  #                             "Aronia sp."="gray60",
-  #                             "Aronia eller Sorbaronia"="gray60",
-  #                             "Sorbaronia mitschurinii"="#2c7bb6"),  #olivedrab4
-  #                  name = "") +
+  geom_sankey_label(size = 3, color = 1, fill = "white") +
+  scale_fill_manual(values = c("Aronia arbutifolia"="#d73027",  
+                               "Aronia melanocarpa"="#fee090",  
+                               "Aronia sp."="#fc8d59",
+                               "Aronia \U00D7prunifolia"="#4575b4",   
+                               "Aronia/\U00D7Sorbaronia"="#91bfdb",
+                               "\U00D7Sorbaronia mitschurinii" = "#e0f3f8",
+                               "Bestembart, ikke tilgjengelig" = "gray40",
+                               "Ikke bestembart" = "gray70"),  
+                    name = "") +
   labs(x = "") +
-  theme_sankey(base_size = 15) +
+  theme_sankey(base_size = 14) +
   theme(legend.position="none",
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.x = element_text(size = 15),
-        plot.margin = unit(c(0,-5,0,-5), 'cm')) +
+        axis.text.x = element_text(size = 14),
+        plot.margin = unit(c(0,-3,0,-4), 'cm')) +
   coord_cartesian(clip = 'off')
+
+ggsave('Aronia_utenVerdier.png', bg='transparent', 
+       width = 14.5, height = 9, units = 'cm', device = 'png', dpi = 300)
 
 
 ##--------------------------------------------------------------
@@ -54,31 +59,6 @@ aronia %>%
 # Med verdier ; disse gjøres best manuelt!
 
 # Klar gjør filer
-## SLETT?
-{
-  # Step 1
-  Sankey1 <- aronia %>%
-    rename('F\U00F8r revisjon' = 'Foer_revisjon' ,
-           'Etter revisjon' = 'Etter_revisjon' ) %>%
-    make_long('F\U00F8r revisjon', 'Etter revisjon')
-  
-  # Step 2
-  Sankey2 <- Sankey1%>%
-    dplyr::group_by(node)%>%
-    tally()
-  
-  # Step 3
-  Sankey3 <- merge(Sankey1, Sankey2, by.x = 'node', by.y = 'node', all.x = TRUE)
-  # Juster verdier til det rette jfr tabell fra Hanne
-  Sankey3$n[Sankey3$node == 'Aronia melanocarpa' & Sankey3$x == 'Foer revisjon'] <- '171'
-  Sankey3$n[Sankey3$node == 'Aronia melanocarpa' & Sankey3$x == 'Etter revisjon'] <- '8'
-  # Sorter i rekkefølge aht. labelling
-  Sankey3 <- Sankey3 %>%
-    arrange(factor(node, levels = c('Aronia arbutifolia','Aronia \U00D7prunifolia','Aronia melanocarpa','Sorbaronia mitschurinii','Aronia sp.','Aronia eller Sorbaronia')),
-            factor(next_node, levels = c('Aronia arbutifolia','Aronia \U00D7prunifolia','Aronia melanocarpa','Sorbaronia mitschurinii','Aronia sp.','Aronia eller Sorbaronia')))
-}
-
-### BEHOLD?
 {
   # Step 1
   Sankey1 <- aronia %>%
@@ -118,32 +98,6 @@ aronia %>%
 
 # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
 ### Fargeblind-vennlig
-# SLETT?
-{ggplot(Sankey3, aes(x = x, 
-                    next_x = next_x, 
-                    node = node, 
-                    next_node = next_node,
-                    fill = node,
-                    label = paste0(node,",", n) )) +   # OBS HER
-  geom_sankey(flow.alpha = 0.75, node.color = 0.9) +
-  geom_sankey_label(aes(x = c(rep(.78,3), rep(.78,73), rep(.78,171), rep(2.25,8), rep(2.25,70), rep(.78,10), rep(2.25,179))),
-                    size = 5, color = 1, fill = "white", width = .3) +
-  scale_fill_manual(values = c("Aronia arbutifolia"="#d7191c",  #lightcoral
-                               "Aronia melanocarpa"="#abd9e9",  #steelblue3
-                               "Aronia \U00D7prunifolia"="#fdae61",   #khaki1
-                               "Aronia sp."="gray60",
-                               "Aronia eller Sorbaronia"="gray60",
-                               "Sorbaronia mitschurinii"="#2c7bb6"),  #olivedrab4
-                    name = "") +
-  labs(x = "") +
-  theme_sankey(base_size = 15) +
-  theme(legend.position="none",
-        panel.background = element_rect(fill='transparent', color = NA),
-        plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.x = element_text(size = 15)) +
-  coord_cartesian(clip = 'off')}
-
-
 ggplot(Sankey3, aes(x = x, 
                     next_x = next_x, 
                     node = node, 
@@ -151,7 +105,6 @@ ggplot(Sankey3, aes(x = x,
                     fill = node,
                     label = paste0(node,", ", n2) )) +
   geom_sankey(flow.alpha = 0.8, node.color = 0.9) +
-  
   geom_sankey_label(aes(x = c(
     # Aronia arbutifolia
     rep(.78, Sankey3 %>% filter(node=='Aronia arbutifolia') %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),
@@ -171,8 +124,7 @@ ggplot(Sankey3, aes(x = x,
     rep(2.1, Sankey3 %>% filter(node=='Bestembart, ikke tilgjengelig' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
     # SE
     rep(2.1, Sankey3 %>% filter(node=='Ikke bestembart' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]) ) ),   
-    size = 5, color = 1, fill = "white", hjust=.25)  +
-
+    size = 3, color = 1, fill = "white", hjust=.25)  +
   scale_fill_manual(values = c("Aronia arbutifolia"="#d73027",  
                                "Aronia melanocarpa"="#fee090",  
                                "Aronia sp."="#fc8d59",
@@ -183,16 +135,16 @@ ggplot(Sankey3, aes(x = x,
                                "Ikke bestembart" = "gray70"),  
                     name = "") +
   labs(x = "") +
-  theme_sankey(base_size = 15) +
+  theme_sankey(base_size = 14) +
   theme(legend.position="none",
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.x = element_text(size = 15),
-        plot.margin = unit(c(0,-1.5,0,-2.5), 'cm')) +
+        axis.text.x = element_text(size = 14),
+        plot.margin = unit(c(0,-.5,0,-2), 'cm')) +
   coord_cartesian(clip = 'off')
 
-ggsave('Aronia_v1.png', bg='transparent')
-
+ggsave('Aronia_medVerdier.png', bg='transparent', 
+       width = 14.5, height = 9, units = 'cm', device = 'png', dpi = 300)
 
 
 ##---------------------------------------------------------------------
