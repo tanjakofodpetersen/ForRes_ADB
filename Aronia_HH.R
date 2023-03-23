@@ -15,9 +15,9 @@ aronia[aronia$Foer_revisjon == 'Aronia xprunifolia', "Foer_revisjon"] <- 'Aronia
 aronia[aronia$Etter_revisjon == 'Aronia xprunifolia', "Etter_revisjon"] <- 'Aronia \U00D7prunifolia'
 aronia[aronia$Etter_revisjon == 'Aronia/xSorbaronia', "Etter_revisjon"] <- 'Aronia/\U00D7Sorbaronia'
 aronia[aronia$Etter_revisjon == 'xSorbaronia mitschurinii', "Etter_revisjon"] <- '\U00D7Sorbaronia mitschurinii'
+aronia[aronia$Etter_revisjon == 'Bestembart, ikke tilgjengelig', "Etter_revisjon"] <- 'Ikke tilgjengelig'
 
 ## Uten verdier
-
 # Plot
 aronia %>%
   rename('F\U00F8r revisjon' = 'Foer_revisjon' ,
@@ -30,14 +30,23 @@ aronia %>%
                 fill = node,
                 label = node)) +
   geom_sankey(flow.alpha = 0.75, node.color = 0.9, width = .3) +
-  geom_sankey_label(size = 3, color = 1, fill = "white") +
+  geom_sankey_label(size = 3, color = 1, fill = "white", hjust = c(.6,   # Aronia arbutifolia
+                                                                   .525, # Aronia melanocarpa (venstre)
+                                                                   .95,  # Aronia sp.
+                                                                   .6,   # Aronia \U00D7prunifolia (venstre)
+                                                                   .475,   # Aronia melanocarpa (høyre)
+                                                                   .4,   # Aronia \U00D7prunifolia (høyre)
+                                                                   .45, # Aronia/\U00D7Sorbaronia
+                                                                   .35,  # Ikke bestembart
+                                                                   .3,  # Ikke tilgjengelig
+                                                                   .55) ) +
   scale_fill_manual(values = c("Aronia arbutifolia"="#d73027",  
                                "Aronia melanocarpa"="#fee090",  
                                "Aronia sp."="#fc8d59",
                                "Aronia \U00D7prunifolia"="#4575b4",   
                                "Aronia/\U00D7Sorbaronia"="#91bfdb",
                                "\U00D7Sorbaronia mitschurinii" = "#e0f3f8",
-                               "Bestembart, ikke tilgjengelig" = "gray40",
+                               "Ikke tilgjengelig" = "gray40",
                                "Ikke bestembart" = "gray70"),  
                     name = "") +
   labs(x = "") +
@@ -45,8 +54,8 @@ aronia %>%
   theme(legend.position="none",
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.x = element_text(size = 14),
-        plot.margin = unit(c(0,-3,0,-4), 'cm')) +
+        axis.text.x = element_text(size = 14, color = 'white'),
+        plot.margin = unit(c(0,-4,0,-4), 'cm')) +
   coord_cartesian(clip = 'off')
 
 ggsave('Aronia_utenVerdier.png', bg='transparent', 
@@ -97,7 +106,6 @@ ggsave('Aronia_utenVerdier.png', bg='transparent',
 }
 
 # Plot - OBS PÅ PLACERING OG ANTALL GJENTAGELSER AV LABELS - MÅ FIKSES MANUELT
-### Fargeblind-vennlig
 ggplot(Sankey3, aes(x = x, 
                     next_x = next_x, 
                     node = node, 
@@ -120,9 +128,9 @@ ggplot(Sankey3, aes(x = x,
     rep(2.1, Sankey3 %>% filter(node=='Aronia/\U00D7Sorbaronia' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
     # \U00D7Sorbaronia mitschurinii
     rep(2.1, Sankey3 %>% filter(node=='\U00D7Sorbaronia mitschurinii' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
-    # HI
-    rep(2.1, Sankey3 %>% filter(node=='Bestembart, ikke tilgjengelig' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
-    # SE
+    # Ikke tilgjengelig
+    rep(2.1, Sankey3 %>% filter(node=='Ikke tilgjengelig' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]),   
+    # Ikke bestembart
     rep(2.1, Sankey3 %>% filter(node=='Ikke bestembart' & is.na(next_node)) %>% filter(row_number()==1) %>% select(n2) %>% .[[1]]) ) ),   
     size = 3, color = 1, fill = "white", hjust=.25)  +
   scale_fill_manual(values = c("Aronia arbutifolia"="#d73027",  
@@ -131,7 +139,7 @@ ggplot(Sankey3, aes(x = x,
                                "Aronia \U00D7prunifolia"="#4575b4",   
                                "Aronia/\U00D7Sorbaronia"="#91bfdb",
                                "\U00D7Sorbaronia mitschurinii" = "#e0f3f8",
-                               "Bestembart, ikke tilgjengelig" = "gray40",
+                               "Ikke tilgjengelig" = "gray40",
                                "Ikke bestembart" = "gray70"),  
                     name = "") +
   labs(x = "") +
